@@ -4,7 +4,11 @@ module.exports = {
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      backgroundImage: {
+        'game-table': "url('../public/png/tops_logo.png')",
+      }
+    },
   },
   plugins: [
     require('tailwindcss'),
