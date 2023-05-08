@@ -8,8 +8,9 @@ function App() {
   const [playerHand, setPlayerHand] = useState([{}]);
   const [busted, setBusted] = useState([{}]);
 
-  function handleBust() {
+  function handleBust(data) {
     console.log("Ya busted");
+    setPlayerHand(data);
     setBusted(true);
   }
 
