@@ -6,10 +6,10 @@ import Alert from "./components/Alert";
 function App() {
   const [gameDeck, setGameDeck] = useState([{}]);
   const [playerHand, setPlayerHand] = useState([{}]);
+  const [dealerHand, setDealerHand] = useState([{}]);
   const [busted, setBusted] = useState([{}]);
 
   function handleBust(data) {
-    console.log("Ya busted");
     setPlayerHand(data);
     setBusted(true);
   }
@@ -34,7 +34,8 @@ function App() {
     fetch("/api/deck/deal")
       .then((response) => response.json())
       .then((data) => {
-        setPlayerHand(data);
+        setPlayerHand(data.playerHand);
+        setDealerHand(data.dealerHand);
       });
     setBusted(false);
   }
@@ -47,10 +48,19 @@ function App() {
       })
       .then((data) => {
         console.log(data);
+        if (data.bust) {
+          console.log("Bust!");
+          handleBust();
+        }
         setPlayerHand(data);
-      })
-      .catch((error) => {
-        handleBust();
+      });
+  }
+
+  function stay() {
+    fetch("/api/stay")
+      .then((response) => response.json())
+      .then((data) => {
+        setPlayerHand(data);
       });
   }
 
@@ -59,9 +69,12 @@ function App() {
       <h1 className="font-extrabold text-slate-200 px-10 py-5 bg-zinc-900">
         FNV BLACKJACK
       </h1>
-      <div className="h-1/3">
-        {busted ? <Alert message={"You bust!"}></Alert> : <h1></h1>}
-      </div>{" "}
+      <div className="w-screen flex items-center justify-center">
+        <Deck deck={dealerHand} isDealer={true} />
+      </div>
+      <div className="h-44">
+        {busted ? <Alert message={"You bust!"}></Alert> : <p></p>}
+      </div>
       {/* Top row */}
       <div className="h-3/4">
         <Button variant="contained" onClick={dealDeck}>
@@ -72,6 +85,9 @@ function App() {
         </Button>
         <Button variant="contained" onClick={handleShuffle}>
           Shuffle
+        </Button>
+        <Button variant="contained" onClick={stay}>
+          Stay
         </Button>
       </div>{" "}
       {/* Middle row */}

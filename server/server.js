@@ -18,6 +18,13 @@ const values = [
   "ace",
 ];
 
+let playerHand = [];
+let dealerHand = [];
+let isBusted = false;
+let playerScore = 0;
+let dealerScore = 0;
+let gameDeck = createDeck();
+
 function createDeck() {
   const deck = [];
   for (let suit of suits) {
@@ -35,24 +42,21 @@ function createDeck() {
   return deck;
 }
 
-let playerHand = [];
-
-let deck = createDeck();
-let isBusted = false;
-let playerScore = 0;
-
 function dealDeck(deck) {
   playerHand = [];
-  deck = createDeck();
+  dealerHand = [];
   isBusted = false;
-  playerHand.push(deck.shift());
-  playerHand.push(deck.shift());
+  gameDeck = createDeck();
+  playerHand.push(deck.pop());
+  playerHand.push(deck.pop());
+  dealerHand.push(deck.pop());
+  dealerHand.push(deck.pop());
 
-  return playerHand;
+  return { playerHand: playerHand, dealerHand: dealerHand };
 }
 
 function drawCard(deck) {
-  playerHand.push(deck.shift());
+  playerHand.push(deck.pop());
   return playerHand;
 }
 
@@ -64,28 +68,55 @@ function shuffleDeck(deck) {
   }
 }
 
+function handleAces(aceCount) {
+  if (aceCount > 1) {
+    for (let i = aceCount; i > 0; i--) {
+      playerScore -= 11;
+      if (playerScore <= 21) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+function didWin() {
+  return playerScore > dealerScore && playerScore <= 21;
+}
+
 app.get("/api/deck/new", (req, res) => {
-  res.json(deck);
+  res.json(gameDeck);
 });
 
 app.get("/api/shuffle", (req, res) => {
-  shuffleDeck(deck);
-  res.json(deck);
+  shuffleDeck(gameDeck);
+  res.json(gameDeck);
 });
 
 app.get("/api/deck/deal", (req, res) => {
-  const hand = dealDeck(deck);
+  const hand = dealDeck(gameDeck);
   hand === null
     ? res.status(500).send({ errorMessage: "Error Occured " })
     : res.json(hand);
+});
+
+app.get("/api/stay", (req, res) => {
+  let winString = { win: false };
+  if (didWin()) {
+    winString.win = true;
+    console.log("yo");
+    res.json(winString);
+  } else {
+    console.log("yoy");
+    res.json(winString);
+  }
 });
 
 app.get("/api/deck/hit", (req, res) => {
   let hand = [];
   let aceCount = 0;
   if (!isBusted) {
-    hand = drawCard(deck);
-    console.log(hand);
+    hand = drawCard(gameDeck);
     playerScore = 0;
     hand.forEach((card) => {
       const value = card.value;
@@ -94,22 +125,17 @@ app.get("/api/deck/hit", (req, res) => {
         playerScore += 10;
       } else if (value === "ace") {
         // If adding 11 would take the total above 21, add 1 instead
-        aceCount++;
-        playerScore += playerScore + 11 > 21 ? 1 : 11;
+        playerScore += 11;
+        aceCount += 1;
       } else {
         playerScore += parseInt(value);
       }
     });
   }
 
-  for (let i = aceCount; i > 0; i--) {
-    playerScore -= 10;
-    aceCount--;
-  }
-
-  if (playerScore > 21 || isBusted) {
-    console.log("Bust");
-    res.status(400).json({ error: " Bust" });
+  if ((playerScore > 21 && !handleAces(aceCount)) || isBusted) {
+    const bust = { bust: true };
+    res.json(bust);
     playerScore = 0;
     isBusted = true;
   } else {
