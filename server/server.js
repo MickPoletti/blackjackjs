@@ -46,11 +46,15 @@ function dealDeck(deck) {
   playerHand = [];
   dealerHand = [];
   isBusted = false;
+
   gameDeck = createDeck();
+
   playerHand.push(deck.pop());
   playerHand.push(deck.pop());
   dealerHand.push(deck.pop());
   dealerHand.push(deck.pop());
+
+  setDealerScore();
 
   return { playerHand: playerHand, dealerHand: dealerHand };
 }
@@ -80,18 +84,39 @@ function handleAces(aceCount) {
   }
 }
 
+function setDealerScore() {
+  dealerScore = getScore(dealerHand);
+}
+
+function getScore(hand) {
+  let score = 0;
+  hand.forEach((card) => {
+    const value = card.value;
+
+    if (value === "jack" || value === "queen" || value === "king") {
+      score += 10;
+    } else if (value === "ace") {
+      // If adding 11 would take the total above 21, add 1 instead
+      score += 11;
+    } else {
+      score += parseInt(value);
+    }
+  });
+  return score;
+}
+
 function didWin() {
-  return playerScore > dealerScore && playerScore <= 21;
+  return (playerScore > dealerScore && playerScore <= 21) || dealerScore > 21;
 }
 
 app.get("/api/deck/new", (req, res) => {
   res.json(gameDeck);
 });
 
-app.get("/api/shuffle", (req, res) => {
-  shuffleDeck(gameDeck);
-  res.json(gameDeck);
-});
+// app.get("/api/shuffle", (req, res) => {
+//   shuffleDeck(gameDeck);
+//   res.json(gameDeck);
+// });
 
 app.get("/api/deck/deal", (req, res) => {
   const hand = dealDeck(gameDeck);
@@ -101,20 +126,37 @@ app.get("/api/deck/deal", (req, res) => {
 });
 
 app.get("/api/stay", (req, res) => {
-  let winString = { win: false };
+  while (dealerScore < 16) {
+    dealerHand.push(gameDeck.pop());
+    setDealerScore();
+  }
+
+  let response = {
+    win: false,
+    alertMessage: "",
+    playerHand: playerHand,
+    dealerHand: dealerHand,
+  };
+
   if (didWin()) {
-    winString.win = true;
-    console.log("yo");
-    res.json(winString);
+    response.win = true;
+    response.alertMessage = "You win!";
+    res.json(response);
   } else {
-    console.log("yoy");
-    res.json(winString);
+    response.alertMessage = "You lose!";
+    res.json(response);
   }
 });
 
 app.get("/api/deck/hit", (req, res) => {
   let hand = [];
   let aceCount = 0;
+  let returnStr = {
+    bust: isBusted,
+    playerHand: playerHand,
+    dealerHand: dealerHand,
+  };
+
   if (!isBusted) {
     hand = drawCard(gameDeck);
     playerScore = 0;
@@ -134,13 +176,12 @@ app.get("/api/deck/hit", (req, res) => {
   }
 
   if ((playerScore > 21 && !handleAces(aceCount)) || isBusted) {
-    const bust = { bust: true };
-    res.json(bust);
     playerScore = 0;
+    dealerScore = 0;
     isBusted = true;
+    res.json(returnStr);
   } else {
-    console.log(playerScore);
-    res.json(hand);
+    res.json(returnStr);
     isBusted = false;
   }
 });
