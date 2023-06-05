@@ -4,29 +4,25 @@ import Button from "@mui/material/Button";
 import Alert from "./components/Alert";
 
 function App() {
-  const [gameDeck, setGameDeck] = useState([{}]);
   const [playerHand, setPlayerHand] = useState([{}]);
   const [dealerHand, setDealerHand] = useState([{}]);
-  const [busted, setBusted] = useState([{}]);
+  const [alert, setAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [gameReset, setReset] = useState(false);
+  const [revealCard, setRevealCard] = useState([{}]);
 
-  function handleBust(data) {
-    setPlayerHand(data);
-    setBusted(true);
-  }
-
-  function handleShuffle() {
-    fetch("/api/shuffle")
-      .then((response) => response.json())
-      .then((data) => {
-        setGameDeck(data);
-      });
+  function handleBust() {
+    setAlertMessage("You bust!");
+    setAlert(true);
+    setReset(true);
   }
 
   useEffect(() => {
     fetch("/api/deck/new")
       .then((response) => response.json())
       .then((data) => {
-        setGameDeck(data);
+        setAlert(false);
+        setAlertMessage("");
       });
   }, []);
 
@@ -37,7 +33,9 @@ function App() {
         setPlayerHand(data.playerHand);
         setDealerHand(data.dealerHand);
       });
-    setBusted(false);
+    setRevealCard(false);
+    setReset(false);
+    setAlert(false);
   }
 
   function hit() {
@@ -47,20 +45,21 @@ function App() {
         else return response.json();
       })
       .then((data) => {
-        console.log(data);
         if (data.bust) {
-          console.log("Bust!");
           handleBust();
         }
-        setPlayerHand(data);
+        setPlayerHand(data.playerHand);
       });
   }
 
   function stay() {
+    setRevealCard(true);
     fetch("/api/stay")
       .then((response) => response.json())
       .then((data) => {
-        setPlayerHand(data);
+        setDealerHand(data.dealerHand);
+        setAlertMessage(data.alertMessage);
+        setAlert(true);
       });
   }
 
@@ -70,10 +69,15 @@ function App() {
         FNV BLACKJACK
       </h1>
       <div className="w-screen flex items-center justify-center">
-        <Deck deck={dealerHand} isDealer={true} />
+        <Deck
+          deck={dealerHand}
+          isDealer={true}
+          revealCard={revealCard}
+          gameReset={gameReset}
+        />
       </div>
       <div className="h-44">
-        {busted ? <Alert message={"You bust!"}></Alert> : <p></p>}
+        {alert ? <Alert message={alertMessage}></Alert> : <p></p>}
       </div>
       {/* Top row */}
       <div className="h-3/4">
@@ -83,16 +87,16 @@ function App() {
         <Button variant="contained" onClick={hit}>
           Hit
         </Button>
-        <Button variant="contained" onClick={handleShuffle}>
+        {/* <Button variant="contained" onClick={handleShuffle}>
           Shuffle
-        </Button>
+        </Button> */}
         <Button variant="contained" onClick={stay}>
           Stay
         </Button>
       </div>{" "}
       {/* Middle row */}
       <div className="w-screen h-1/3 flex items-center justify-center">
-        <Deck deck={playerHand} />
+        <Deck deck={playerHand} gameReset={gameReset} />
       </div>
     </div>
   );
