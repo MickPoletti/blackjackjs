@@ -17,9 +17,9 @@ export default function Deck({ deck, isDealer, revealCard, gameReset }) {
           img: "/png/tops_card.webp",
           name: "hidden",
         };
-        localDeck.push(<Card item={hiddenCard} />);
+        localDeck.push(<Card key={0} item={hiddenCard} />);
       } else {
-        localDeck.push(<Card item={deck[i]} />);
+        localDeck.push(<Card key={i} item={deck[i]} />);
       }
     }
     return (
@@ -29,6 +29,6 @@ export default function Deck({ deck, isDealer, revealCard, gameReset }) {
     );
   }
   return (
-    <div className="flex flex-wrap  min-w-[152px] min-h-[109px] bg-slate-800 rounded-lg border-amber-500 border-2 gap-3 p-3" />
+    <div className="flex flex-wrap min-w-[152px] min-h-[109px] bg-slate-800 rounded-lg border-amber-500 border-2 gap-3 p-3" />
   );
 }

@@ -76,11 +76,7 @@ function handleAces(aceCount) {
   if (aceCount > 1) {
     for (let i = aceCount; i > 0; i--) {
       playerScore -= 11;
-      if (playerScore <= 21) {
-        return true;
-      }
     }
-    return false;
   }
 }
 
@@ -112,11 +108,6 @@ function didWin() {
 app.get("/api/deck/new", (req, res) => {
   res.json(gameDeck);
 });
-
-// app.get("/api/shuffle", (req, res) => {
-//   shuffleDeck(gameDeck);
-//   res.json(gameDeck);
-// });
 
 app.get("/api/deck/deal", (req, res) => {
   const hand = dealDeck(gameDeck);
@@ -174,11 +165,14 @@ app.get("/api/deck/hit", (req, res) => {
       }
     });
   }
-
-  if ((playerScore > 21 && !handleAces(aceCount)) || isBusted) {
+  console.log(playerScore);
+  handleAces(aceCount);
+  console.log("after ace =" + playerScore);
+  if (playerScore > 21 || isBusted) {
+    console.log("bust");
     playerScore = 0;
     dealerScore = 0;
-    isBusted = true;
+    returnStr.bust = true;
     res.json(returnStr);
   } else {
     res.json(returnStr);

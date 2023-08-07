@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap');
 
 /* * {
   margin: 0;
@@ -20,6 +21,7 @@
   align-items: center;
 } */
 
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -29,6 +31,8 @@ code {
   text-align: left;
   margin-bottom: 1em;
 } */
+
+.tab { padding-left: 4em; }
 
 .container {
   height: 80vh;
