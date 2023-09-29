@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 
+/* Set up constants */
 const suits = ["clubs", "diamonds", "hearts", "spades"];
 const values = [
   "2",
@@ -17,9 +18,13 @@ const values = [
   "king",
   "ace",
 ];
+const maxBet = 20000;
 
 let playerHand = [];
 let dealerHand = [];
+let casino = "Tops";
+let chips = 0;
+let earnings = 0;
 let isBusted = false;
 let playerScore = 0;
 let dealerScore = 0;
@@ -106,7 +111,14 @@ function didWin() {
 }
 
 app.get("/api/deck/new", (req, res) => {
-  res.json(gameDeck);
+  let response = {
+    casino: casino,
+    chips: chips,
+    earnings: earnings,
+    gameDeck: gameDeck,
+    maxBet: maxBet,
+  };
+  res.json(response);
 });
 
 app.get("/api/deck/deal", (req, res) => {

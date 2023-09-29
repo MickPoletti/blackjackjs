@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import Deck from "./components/Deck";
-import Button from "@mui/material/Button";
 import Alert from "./components/Alert";
 import Controls from "./components/Controls";
 
@@ -12,6 +11,11 @@ function App() {
   const [gameReset, setReset] = useState(false);
   const [revealCard, setRevealCard] = useState([{}]);
   const [isPlaying, setPlaying] = useState(false);
+  const [bet, setBet] = useState(1);
+  const [maxBet, setMaxBet] = useState(10000);
+  const [chips, setChips] = useState(0);
+  const [earnings, setEarnings] = useState(0);
+  const [casino, setCasino] = useState("Tops");
 
   const handlePlaying = () => {
     setPlaying(!isPlaying);
@@ -55,6 +59,8 @@ function App() {
           handlePlaying();
           console.log("stay");
           break;
+        default:
+        // Do nothing the user hit an unsupported key
       }
     } else {
       switch (e.key) {
@@ -66,34 +72,63 @@ function App() {
           break;
         // Increase Bet
         case "e":
-          console.log("Increase Bet");
+          if (bet >= maxBet) break;
+          if (bet >= 0 && bet < 10) {
+            setBet(bet + 1);
+          } else if (bet >= 10 && bet < 100) {
+            setBet(bet + 10);
+          } else if (bet >= 100 && bet < 1000) {
+            setBet(bet + 100);
+          } else {
+            setBet(bet + 1000);
+          }
           break;
         // Decrease Bet
         case "q":
-          console.log("Decrease Bet");
+          if (bet <= 0) break;
+          if (bet > 0 && bet <= 10) {
+            setBet(bet - 1);
+          } else if (bet > 10 && bet <= 100) {
+            setBet(bet - 10);
+          } else if (bet > 100 && bet <= 1000) {
+            setBet(bet - 100);
+          } else {
+            setBet(bet - 1000);
+          }
           break;
         // Bet Max
         case "s":
-          console.log("Bet Max");
+          setBet(maxBet);
           break;
         // Exit
+        // TODO: Make this go to landing page (home screen)
         case "r":
           console.log("exit");
-
           break;
+        default:
+        // Do nothing the user hit an unsupported key
       }
     }
   }
 
+  // Call new deck when page loads
   useEffect(() => {
+    // Start alert in off mode
+    setAlert(false);
+    setAlertMessage("");
+    // Make call to api for a new game state
+    // TODO: Handle multiple players
     fetch("/api/deck/new")
       .then((response) => response.json())
       .then((data) => {
-        setAlert(false);
-        setAlertMessage("");
+        setCasino(data.casino);
+        setChips(data.chips);
+        setEarnings(data.earnings);
+        setMaxBet(data.maxBet);
       });
   }, []);
 
+  // Handle keypresses so it feels more like the fallout game
   useEffect(() => {
     document.addEventListener("keypress", handleKeyDown);
     return function cleanup() {
@@ -101,6 +136,12 @@ function App() {
     };
   }, [handleKeyDown]);
 
+  /* Begin functions to handle calls to api */
+
+  // dealDeck is called when the user presses the 'W' key and is
+  // responsible for sending the api the current user state.
+  // I.e (player hand, the dealer hand state and the current bet)
+  // TODO: perhaps should make the chips handling all back end
   function dealDeck() {
     fetch("/api/deck/deal")
       .then((response) => response.json())
@@ -171,11 +212,13 @@ function App() {
       <div className="w-screen h-1/3 grid grid-rows-1 grid-cols-3 items-center justify-center">
         <div className="w-56 h-24 ml-6 border-l-2 border-b-2 border-fallout-green font-robotomono text-fallout-green">
           <div className=" ml-4 mt-1">
-            <h3>Current Bet: &nbsp; 200</h3>
+            <h3>Current Bet: &nbsp; {bet}</h3>
             <h3>
-              Chips: <span className="pl-[4.8em]">11300</span>
+              Chips: <span className="pl-[4.8em]">{chips}</span>
             </h3>
-            <h3>Tops Earnings: 1300</h3>
+            <h3>
+              {casino} Earnings: {earnings}
+            </h3>
           </div>
         </div>
         <div className="flex items-center justify-center">
