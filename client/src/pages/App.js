@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import Deck from "./components/Deck";
-import Alert from "./components/Alert";
-import Controls from "./components/Controls";
+import Deck from "../components/Deck";
+import Alert from "../components/Alert";
+import Controls from "../components/Controls";
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import {Redirect} from 'react-router-dom';
+
 
 function App() {
   const [playerHand, setPlayerHand] = useState([{}]);
@@ -101,9 +104,9 @@ function App() {
           setBet(maxBet);
           break;
         // Exit
-        // TODO: Make this go to landing page (home screen)
+        // This goes to landing page (home screen)
         case "r":
-          console.log("exit");
+          window.location = '/';
           break;
         default:
         // Do nothing the user hit an unsupported key
@@ -182,9 +185,9 @@ function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col bg-game-table bg-center bg-cover">
-      <h1 className="font-robotomono text-slate-200 px-10 py-5 bg-zinc-900">
+      <Link to="/" className="font-robotomono text-slate-200 px-10 py-5 bg-zinc-900">
         FNV BLACKJACK
-      </h1>
+      </Link>
       <div className="w-screen flex items-center justify-center">
         <Deck
           deck={dealerHand}
