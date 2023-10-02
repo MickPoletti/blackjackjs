@@ -1,5 +1,7 @@
 const express = require("express");
 const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 /* Set up constants */
 const suits = ["clubs", "diamonds", "hearts", "spades"];
@@ -21,9 +23,10 @@ const values = [
 const maxBet = 20000;
 
 let playerHand = [];
+let currentBet = 0;
 let dealerHand = [];
 let casino = "Tops";
-let chips = 0;
+let playerChips = 0;
 let earnings = 0;
 let isBusted = false;
 let playerScore = 0;
@@ -113,7 +116,7 @@ function didWin() {
 app.get("/api/deck/new", (req, res) => {
   let response = {
     casino: casino,
-    chips: chips,
+    chips: playerChips,
     earnings: earnings,
     gameDeck: gameDeck,
     maxBet: maxBet,
@@ -121,7 +124,8 @@ app.get("/api/deck/new", (req, res) => {
   res.json(response);
 });
 
-app.get("/api/deck/deal", (req, res) => {
+app.post("/api/deck/deal", (req, res) => {
+  currentBet = req.body.currentBet;
   const hand = dealDeck(gameDeck);
   hand === null
     ? res.status(500).send({ errorMessage: "Error Occured " })
@@ -135,18 +139,23 @@ app.get("/api/stay", (req, res) => {
   }
 
   let response = {
-    win: false,
     alertMessage: "",
-    playerHand: playerHand,
+    chips: playerChips,
     dealerHand: dealerHand,
+    playerHand: playerHand,
+    win: false,
   };
 
   if (didWin()) {
     response.win = true;
     response.alertMessage = "You win!";
+    playerChips += currentBet;
+    response.chips = playerChips;
     res.json(response);
   } else {
     response.alertMessage = "You lose!";
+    playerChips -= currentBet;
+    response.chips = playerChips;
     res.json(response);
   }
 });
@@ -179,7 +188,7 @@ app.get("/api/deck/hit", (req, res) => {
   }
   console.log(playerScore);
   handleAces(aceCount);
-  console.log("after ace =" + playerScore);
+  console.log("after ace = " + playerScore);
   if (playerScore > 21 || isBusted) {
     console.log("bust");
     playerScore = 0;

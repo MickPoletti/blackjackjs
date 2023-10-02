@@ -3,6 +3,7 @@ import Deck from "../components/Deck";
 import Alert from "../components/Alert";
 import Controls from "../components/Controls";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import axios from "axios";
 import {Redirect} from 'react-router-dom';
 
 
@@ -146,12 +147,23 @@ function App() {
   // I.e (player hand, the dealer hand state and the current bet)
   // TODO: perhaps should make the chips handling all back end
   function dealDeck() {
-    fetch("/api/deck/deal")
-      .then((response) => response.json())
-      .then((data) => {
-        setPlayerHand(data.playerHand);
-        setDealerHand(data.dealerHand);
-      });
+    axios.post("api/deck/deal", {
+      currentBet: bet
+    })
+    // fetch("/api/deck/deal", {
+    //   method: 'POST',
+    //   headers: {
+    //     'Accept': 'application/json',
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({"currentBet": bet,
+    //   })
+    // })
+      // .then((response) => response.json())
+      .then((response) => {
+        setPlayerHand(response.data.playerHand);
+        setDealerHand(response.data.dealerHand);
+    });
     setRevealCard(false);
     setReset(false);
     setAlert(false);
@@ -174,12 +186,14 @@ function App() {
 
   function stay() {
     setRevealCard(true);
+    setAlert(true);
     fetch("/api/stay")
       .then((response) => response.json())
       .then((data) => {
-        setDealerHand(data.dealerHand);
+        console.log(data.chips);
         setAlertMessage(data.alertMessage);
-        setAlert(true);
+        setChips(data.chips);
+        setDealerHand(data.dealerHand);
       });
   }
 
