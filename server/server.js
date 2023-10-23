@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+const db = require('./queries')
 
 /* Set up constants */
 const suits = ["clubs", "diamonds", "hearts", "spades"];
@@ -200,6 +201,10 @@ app.get("/api/deck/hit", (req, res) => {
     isBusted = false;
   }
 });
+
+// MYSQL Functions
+app.get('/users', db.getUsers);
+app.post('/createUser', db.createUser);
 
 app.listen(5000, () => {
   console.log("Server started on port 5000");
