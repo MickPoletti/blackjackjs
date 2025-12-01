@@ -1,6 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,jsx,ts,tsx}"
+  ],
   theme: {
     extend: {
       fontFamily: {
@@ -10,10 +13,10 @@ module.exports = {
         "fallout-green": "#33DD7E",
       },
       backgroundImage: {
-        "game-table": "url('../public/png/tops_logo.png')",
-        "vault-boy": "url('assets/test.png')",
+        "game-table": "url('/png/tops_logo.png')",
+        "vault-boy": "url('/src/assets/test.png')",
       },
     },
   },
-  plugins: [require("tailwindcss"), require("autoprefixer")],
+  plugins: [],
 };
