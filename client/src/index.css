@@ -1,7 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap');
 
 /* * {
   margin: 0;
@@ -39,7 +39,7 @@ code {
   width: 100vw;
   justify-content: center;
   background-size: cover;
-  background-image: url("../public/png/tops_logo.png");
+  background-image: url("/png/tops_logo.png");
   background-position: center;
   display: grid;
   grid-template-columns: 0.3fr auto 1fr;

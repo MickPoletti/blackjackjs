@@ -202,6 +202,10 @@ app.get("/api/deck/hit", (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.json({ message: 'Server is running!', status: 'OK' });
+});
+
 // MYSQL Functions
 app.get('/users', db.getUsers);
 app.post('/createUser', db.createUser);
