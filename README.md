@@ -1,3 +1,13 @@
+# blackjackjs
+
+A reactjs based implementation of the python FNV blackjack game I created
+
+# Running
+
+Running the following command should start both the client and the server locally:
+
+`npm run dev`
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
