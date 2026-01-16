@@ -2,12 +2,13 @@ import { useEffect, useState, useCallback } from "react";
 import Deck from "../components/Deck";
 import Alert from "../components/Alert";
 import Controls from "../components/Controls";
-import { BrowserRouter as Router, Route, Link, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Navigate } from 'react-router-dom';
 
 function App() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { sessionId: initialSessionId, chips: initialChips } = location.state || {};
 
   const [playerHand, setPlayerHand] = useState([{}]);
@@ -131,13 +132,13 @@ function App() {
       setGameEnded(false);
       setAlertMessage(`Score submitted! You ${gameResult === 'win' ? 'won' : 'lost'}.`);
       setAlert(true);
-      window.location = '/';
+      navigate('/');
     } catch (error) {
       console.error("Error submitting score:", error);
       setAlertMessage("Failed to submit score. Try again.");
       setAlert(true);
     }
-  }, [finalScore, gameResult, setShowScoreModal, setAlertMessage, setAlert]);
+  }, [finalScore, gameResult, setShowScoreModal, setAlertMessage, setAlert, navigate]);
 
   const handleKeyDown = useCallback((e) => {
     if (isPlaying) {
@@ -225,14 +226,14 @@ function App() {
           if (gameEnded) {
             setShowScoreModal(true);
           } else {
-            window.location = '/';
+            navigate('/');
           }
           break;
         default:
         // Do nothing the user hit an unsupported key
       }
     }
-  }, [isPlaying, bet, maxBet, setBet, chips, gameEnded, startGame, handlePlaying, hit, stay, setAlertMessage, setAlert]);
+  }, [isPlaying, bet, maxBet, setBet, chips, gameEnded, startGame, handlePlaying, hit, stay, setAlertMessage, setAlert, navigate]);
 
   // Handle keypresses so it feels more like the fallout game
   useEffect(() => {
@@ -256,9 +257,9 @@ function App() {
   // Redirect to home if no session (e.g., on refresh)
   useEffect(() => {
     if (!sessionId) {
-      window.location = '/';
+      navigate('/');
     }
-  }, [sessionId]);
+  }, [sessionId, navigate]);
 
    return (
     <div className="h-screen w-screen flex flex-col bg-game-table bg-center bg-cover">
@@ -318,7 +319,7 @@ function App() {
                   onClick={() => {
                     setShowScoreModal(false);
                     setGameEnded(false);
-                    window.location = '/';
+                    navigate('/');
                   }}
                   className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 font-bold py-2 px-4 rounded transition-colors"
                 >
