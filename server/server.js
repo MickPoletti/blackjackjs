@@ -274,8 +274,6 @@ app.post('/api/game/hit', (req, res) => {
       gameState.result = 'lose';
       const chipsChange = -gameState.bet;
       userChips.set(sessionId, Math.max(0, userChips.get(sessionId) + chipsChange));
-      gameSessions.delete(sessionId);
-      userChips.delete(sessionId);
       return res.json({
         playerHand: gameState.playerHand,
         playerScore: gameState.playerScore,
@@ -337,12 +335,12 @@ app.post('/api/game/stand', (req, res) => {
     } else if (result === 'lose') {
       chipsChange = -gameState.bet;
     }
+    console.log(sessionId);
+    console.log("WOAH " + userChips.get(sessionId));
     userChips.set(sessionId, Math.max(0, userChips.get(sessionId) + chipsChange));
 
     gameState.gamePhase = 'finished';
     gameState.result = result;
-    gameSessions.delete(sessionId);
-    userChips.delete(sessionId);
 
     // Calculate final score (simplified: 100 points for win, 0 for loss/push)
     const finalScore = result === 'win' ? 100 : 0;
