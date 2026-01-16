@@ -31,7 +31,7 @@ function Leaderboard() {
           <h1 className="text-4xl font-bold text-fallout-green font-robotomono mb-4">
             FNV BLACKJACK LEADERBOARD
           </h1>
-          <p className="text-zinc-400">Top scores from Fallout: New Vegas Blackjack</p>
+          <p className="text-zinc-400">Highest Earners:</p>
         </div>
 
         {loading && (

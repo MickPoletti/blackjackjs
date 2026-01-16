@@ -189,6 +189,7 @@ app.get("/api/deck/hit", (req, res) => {
     playerScore = 0;
     dealerScore = 0;
     returnStr.bust = true;
+    finalScore = 0;
     res.json(returnStr);
   } else {
     res.json(returnStr);
@@ -335,15 +336,13 @@ app.post('/api/game/stand', (req, res) => {
     } else if (result === 'lose') {
       chipsChange = -gameState.bet;
     }
-    console.log(sessionId);
-    console.log("WOAH " + userChips.get(sessionId));
     userChips.set(sessionId, Math.max(0, userChips.get(sessionId) + chipsChange));
 
     gameState.gamePhase = 'finished';
     gameState.result = result;
 
     // Calculate final score (simplified: 100 points for win, 0 for loss/push)
-    const finalScore = result === 'win' ? 100 : 0;
+    const finalScore = userChips.get(sessionId);
 
     res.json({
       dealerHand: gameState.dealerHand,
