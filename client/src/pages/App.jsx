@@ -2,13 +2,14 @@ import { useEffect, useState, useCallback } from "react";
 import Deck from "../components/Deck";
 import Alert from "../components/Alert";
 import Controls from "../components/Controls";
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route, Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import { Navigate } from 'react-router-dom';
 
-
-
 function App() {
+  const location = useLocation();
+  const { sessionId: initialSessionId, chips: initialChips } = location.state || {};
+
   const [playerHand, setPlayerHand] = useState([{}]);
   const [dealerHand, setDealerHand] = useState([{}]);
   const [alert, setAlert] = useState(false);
@@ -18,10 +19,11 @@ function App() {
   const [isPlaying, setPlaying] = useState(false);
   const [bet, setBet] = useState(1);
   const maxBet = 10000;
-  const [chips, setChips] = useState(100);
+  const [chips, setChips] = useState(initialChips || 0);
   const earnings = 0;
   const casino = "Tops";
   const [gameSessionId, setGameSessionId] = useState(null);
+  const sessionId = initialSessionId;
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [gameResult, setGameResult] = useState(null);
@@ -66,7 +68,7 @@ function App() {
     }
 
     try {
-      const response = await axios.post("/api/game/start", { bet, chips });
+      const response = await axios.post("/api/game/start", { sessionId, bet });
       const gameData = response.data;
 
       setGameSessionId(gameData.sessionId);
@@ -79,13 +81,13 @@ function App() {
     } catch (error) {
       console.error("Error starting game:", error);
     }
-  }, [bet, chips, setAlertMessage, setAlert, setPlayerHand, setDealerHand, setRevealCard, setReset]);
+  }, [sessionId, bet, chips, setAlertMessage, setAlert, setPlayerHand, setDealerHand, setRevealCard, setReset]);
 
   const hit = useCallback(async () => {
     if (!gameSessionId) return;
 
     try {
-      const response = await axios.post("/api/game/hit", { sessionId: gameSessionId });
+      const response = await axios.post("/api/game/hit", { sessionId });
       const gameData = response.data;
 
        setPlayerHand(gameData.playerHand);
@@ -96,13 +98,13 @@ function App() {
     } catch (error) {
       console.error("Error hitting:", error);
     }
-  }, [gameSessionId, setPlayerHand, handleGameOver]);
+  }, [sessionId, gameSessionId, setPlayerHand, handleGameOver]);
 
   const stay = useCallback(async () => {
     if (!gameSessionId) return;
 
     try {
-      const response = await axios.post("/api/game/stand", { sessionId: gameSessionId });
+      const response = await axios.post("/api/game/stand", { sessionId });
       const gameData = response.data;
 
       setDealerHand(gameData.dealerHand);
@@ -113,7 +115,7 @@ function App() {
     } catch (error) {
       console.error("Error standing:", error);
     }
-  }, [gameSessionId, setDealerHand, setRevealCard, handleGameOver]);
+  }, [sessionId, gameSessionId, setDealerHand, setRevealCard, handleGameOver]);
 
 
   const submitScore = useCallback(async (username) => {
@@ -232,8 +234,6 @@ function App() {
     }
   }, [isPlaying, bet, maxBet, setBet, chips, gameEnded, startGame, handlePlaying, hit, stay, setAlertMessage, setAlert]);
 
-
-
   // Handle keypresses so it feels more like the fallout game
   useEffect(() => {
     document.addEventListener("keypress", handleKeyDown);
@@ -241,6 +241,23 @@ function App() {
       document.removeEventListener("keypress", handleKeyDown);
     };
    }, [handleKeyDown]);
+
+  // Warn on refresh
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = "Are you sure? You'll lose all progress.";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  // Redirect to home if no session (e.g., on refresh)
+  useEffect(() => {
+    if (!sessionId) {
+      window.location = '/';
+    }
+  }, [sessionId]);
 
    return (
     <div className="h-screen w-screen flex flex-col bg-game-table bg-center bg-cover">

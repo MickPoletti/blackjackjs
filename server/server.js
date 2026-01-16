@@ -2,7 +2,8 @@ const express = require("express");
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-const db = require('./queries')
+const db = require('./queries');
+const crypto = require('crypto');
 
 /* Set up constants */
 const suits = ["clubs", "diamonds", "hearts", "spades"];
@@ -25,6 +26,7 @@ const maxBet = 20000;
 
 // Game sessions storage (in production, use Redis or database)
 const gameSessions = new Map();
+const userChips = new Map();
 
 function createDeck() {
   const deck = [];
@@ -199,14 +201,25 @@ app.get('/', (req, res) => {
 });
 
 // Game API Endpoints
+app.get('/api/game/init', (req, res) => {
+  try {
+    const sessionId = crypto.randomBytes(16).toString('hex');
+    userChips.set(sessionId, 100);
+    res.json({ sessionId, chips: 100 });
+  } catch (error) {
+    console.error('Error initializing game:', error);
+    res.status(500).json({ error: 'Failed to initialize game' });
+  }
+});
+
 app.post('/api/game/start', (req, res) => {
   try {
-    const { bet, chips } = req.body;
-    if (!bet || bet <= 0 || bet > chips) {
-      return res.status(400).json({ error: 'Invalid bet amount' });
+    const { sessionId, bet } = req.body;
+    const userChipsVal = userChips.get(sessionId);
+    if (!sessionId || !userChips.has(sessionId) || !bet || bet <= 0 || bet > userChipsVal) {
+      return res.status(400).json({ error: 'Invalid session or bet amount' });
     }
 
-    const sessionId = Math.random().toString(36).substring(7);
     const gameDeck = createDeck();
 
     // Deal initial hands
@@ -223,8 +236,7 @@ app.post('/api/game/start', (req, res) => {
       gamePhase: 'playing',
       isBusted: false,
       dealerRevealed: false,
-      bet,
-      chips
+      bet
     };
 
     gameSessions.set(sessionId, gameState);
@@ -260,7 +272,19 @@ app.post('/api/game/hit', (req, res) => {
       gameState.isBusted = true;
       gameState.gamePhase = 'finished';
       gameState.result = 'lose';
-      gameState.chips -= gameState.bet; // Lose bet on bust
+      const chipsChange = -gameState.bet;
+      userChips.set(sessionId, Math.max(0, userChips.get(sessionId) + chipsChange));
+      gameSessions.delete(sessionId);
+      userChips.delete(sessionId);
+      return res.json({
+        playerHand: gameState.playerHand,
+        playerScore: gameState.playerScore,
+        isBusted: gameState.isBusted,
+        gamePhase: gameState.gamePhase,
+        result: gameState.result,
+        chips: userChips.get(sessionId) || 0,
+        chipsChange
+      });
     }
 
     gameSessions.set(sessionId, gameState);
@@ -269,10 +293,7 @@ app.post('/api/game/hit', (req, res) => {
       playerHand: gameState.playerHand,
       playerScore: gameState.playerScore,
       isBusted: gameState.isBusted,
-      gamePhase: gameState.gamePhase,
-      result: gameState.result || null,
-      chips: gameState.chips,
-      chipsChange: gameState.isBusted ? -gameState.bet : 0
+      gamePhase: gameState.gamePhase
     });
   } catch (error) {
     console.error('Error hitting:', error);
@@ -316,11 +337,12 @@ app.post('/api/game/stand', (req, res) => {
     } else if (result === 'lose') {
       chipsChange = -gameState.bet;
     }
-    gameState.chips += chipsChange;
+    userChips.set(sessionId, Math.max(0, userChips.get(sessionId) + chipsChange));
 
     gameState.gamePhase = 'finished';
     gameState.result = result;
-    gameSessions.set(sessionId, gameState);
+    gameSessions.delete(sessionId);
+    userChips.delete(sessionId);
 
     // Calculate final score (simplified: 100 points for win, 0 for loss/push)
     const finalScore = result === 'win' ? 100 : 0;
@@ -332,7 +354,7 @@ app.post('/api/game/stand', (req, res) => {
       result,
       finalScore,
       gamePhase: gameState.gamePhase,
-      chips: gameState.chips,
+      chips: userChips.get(sessionId) || 0,
       chipsChange
     });
   } catch (error) {
