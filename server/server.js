@@ -23,16 +23,8 @@ const values = [
 ];
 const maxBet = 20000;
 
-let playerHand = [];
-let currentBet = 0;
-let dealerHand = [];
-let casino = "Tops";
-let playerChips = 0;
-let earnings = 0;
-let isBusted = false;
-let playerScore = 0;
-let dealerScore = 0;
-let gameDeck = createDeck();
+// Game sessions storage (in production, use Redis or database)
+const gameSessions = new Map();
 
 function createDeck() {
   const deck = [];
@@ -206,9 +198,203 @@ app.get('/', (req, res) => {
   res.json({ message: 'Server is running!', status: 'OK' });
 });
 
-// MYSQL Functions
-app.get('/users', db.getUsers);
-app.post('/createUser', db.createUser);
+// Game API Endpoints
+app.post('/api/game/start', (req, res) => {
+  try {
+    const sessionId = Math.random().toString(36).substring(7);
+    const gameDeck = createDeck();
+
+    // Deal initial hands
+    const playerHand = [gameDeck.pop(), gameDeck.pop()];
+    const dealerHand = [gameDeck.pop(), gameDeck.pop()];
+
+    const gameState = {
+      sessionId,
+      deck: gameDeck,
+      playerHand,
+      dealerHand,
+      playerScore: calculateScore(playerHand),
+      dealerScore: calculateScore([dealerHand[0]]), // Only count dealer's visible card
+      gamePhase: 'playing',
+      isBusted: false,
+      dealerRevealed: false
+    };
+
+    gameSessions.set(sessionId, gameState);
+
+    res.json({
+      sessionId,
+      playerHand,
+      dealerHand: [dealerHand[0], { name: 'hidden' }], // Hide dealer's second card
+      playerScore: gameState.playerScore
+    });
+  } catch (error) {
+    console.error('Error starting game:', error);
+    res.status(500).json({ error: 'Failed to start game' });
+  }
+});
+
+app.post('/api/game/hit', (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    const gameState = gameSessions.get(sessionId);
+
+    if (!gameState || gameState.gamePhase !== 'playing') {
+      return res.status(400).json({ error: 'Invalid game session' });
+    }
+
+    // Draw a card
+    const newCard = gameState.deck.pop();
+    gameState.playerHand.push(newCard);
+    gameState.playerScore = calculateScore(gameState.playerHand);
+
+    // Check for bust
+    if (gameState.playerScore > 21) {
+      gameState.isBusted = true;
+      gameState.gamePhase = 'busted';
+    }
+
+    gameSessions.set(sessionId, gameState);
+
+    res.json({
+      playerHand: gameState.playerHand,
+      playerScore: gameState.playerScore,
+      isBusted: gameState.isBusted,
+      gamePhase: gameState.gamePhase
+    });
+  } catch (error) {
+    console.error('Error hitting:', error);
+    res.status(500).json({ error: 'Failed to hit' });
+  }
+});
+
+app.post('/api/game/stand', (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    const gameState = gameSessions.get(sessionId);
+
+    if (!gameState || gameState.gamePhase !== 'playing') {
+      return res.status(400).json({ error: 'Invalid game session' });
+    }
+
+    // Dealer plays (hits on soft 17, stands on hard 17+)
+    gameState.dealerRevealed = true;
+    gameState.dealerScore = calculateScore(gameState.dealerHand);
+
+    while (gameState.dealerScore < 17 || (gameState.dealerScore === 17 && hasAce(gameState.dealerHand))) {
+      const newCard = gameState.deck.pop();
+      gameState.dealerHand.push(newCard);
+      gameState.dealerScore = calculateScore(gameState.dealerHand);
+    }
+
+    // Determine winner
+    let result = 'lose';
+    if (gameState.dealerScore > 21) {
+      result = 'win'; // Dealer busts
+    } else if (gameState.playerScore > gameState.dealerScore) {
+      result = 'win'; // Player has higher score
+    } else if (gameState.playerScore === gameState.dealerScore) {
+      result = 'push'; // Tie
+    }
+
+    gameState.gamePhase = 'finished';
+    gameState.result = result;
+    gameSessions.set(sessionId, gameState);
+
+    // Calculate final score (simplified: 100 points for win, 0 for loss/push)
+    const finalScore = result === 'win' ? 100 : 0;
+
+    res.json({
+      dealerHand: gameState.dealerHand,
+      dealerScore: gameState.dealerScore,
+      playerScore: gameState.playerScore,
+      result,
+      finalScore,
+      gamePhase: gameState.gamePhase
+    });
+  } catch (error) {
+    console.error('Error standing:', error);
+    res.status(500).json({ error: 'Failed to stand' });
+  }
+});
+
+// Helper functions
+function calculateScore(hand) {
+  let score = 0;
+  let aces = 0;
+
+  for (const card of hand) {
+    if (card.value === 'ace') {
+      aces += 1;
+      score += 11;
+    } else if (['jack', 'queen', 'king'].includes(card.value)) {
+      score += 10;
+    } else {
+      score += parseInt(card.value);
+    }
+  }
+
+  // Handle aces (convert to 1 if score > 21)
+  while (score > 21 && aces > 0) {
+    score -= 10;
+    aces -= 1;
+  }
+
+  return score;
+}
+
+function hasAce(hand) {
+  return hand.some(card => card.value === 'ace');
+}
+
+// High Score API Endpoints
+app.post('/api/scores/submit', async (req, res) => {
+  try {
+    const { username, score } = req.body;
+    if (!username || typeof score !== 'number') {
+      return res.status(400).json({ error: 'Invalid username or score' });
+    }
+
+    const result = await db.submitScore(username, score);
+    res.json(result);
+  } catch (error) {
+    console.error('Error submitting score:', error);
+    res.status(500).json({ error: 'Failed to submit score' });
+  }
+});
+
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const leaderboard = await db.getLeaderboard(limit);
+    res.json(leaderboard);
+  } catch (error) {
+    console.error('Error getting leaderboard:', error);
+    res.status(500).json({ error: 'Failed to get leaderboard' });
+  }
+});
+
+app.get('/api/scores/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const userScore = await db.getUserScore(username);
+    res.json(userScore);
+  } catch (error) {
+    console.error('Error getting user score:', error);
+    res.status(500).json({ error: 'Failed to get user score' });
+  }
+});
+
+// Legacy endpoint for compatibility
+app.get('/users', async (req, res) => {
+  try {
+    const users = await db.getAllUsers();
+    res.json(users);
+  } catch (error) {
+    console.error('Error getting users:', error);
+    res.status(500).json({ error: 'Failed to get users' });
+  }
+});
 
 app.listen(5000, () => {
   console.log("Server started on port 5000");

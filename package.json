@@ -3,7 +3,10 @@
   "scripts": {
     "client": "cd client && npm run dev",
     "server": "cd server && npm start",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "redis:start": "redis-server --daemonize yes",
+    "redis:stop": "redis-cli shutdown",
+    "dev": "npm run redis:start && sleep 2 && concurrently \"npm run server\" \"npm run client\"",
+    "dev:stop": "npm run redis:stop"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

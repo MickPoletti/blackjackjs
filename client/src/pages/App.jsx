@@ -20,6 +20,10 @@ function App() {
   const [chips, setChips] = useState(0);
   const [earnings, setEarnings] = useState(0);
   const [casino, setCasino] = useState("Tops");
+  const [gameSessionId, setGameSessionId] = useState(null);
+  const [showScoreModal, setShowScoreModal] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const [gameResult, setGameResult] = useState(null);
 
   const handlePlaying = useCallback(() => {
     setPlaying(!isPlaying);
@@ -34,60 +38,83 @@ function App() {
 
   /* Begin functions to handle calls to api */
 
-  // dealDeck is called when the user presses the 'W' key and is
-  // responsible for sending the api the current user state.
-  // I.e (player hand, the dealer hand state and the current bet)
-  // TODO: perhaps should make the chips handling all back end
-  const dealDeck = useCallback(() => {
-    axios.post("api/deck/deal", {
-      currentBet: bet
-    })
-    // fetch("/api/deck/deal", {
-    //   method: 'POST',
-    //   headers: {
-    //     'Accept': 'application/json',
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({"currentBet": bet,
-    //   })
-    // })
-      // .then((response) => response.json())
-      .then((response) => {
-        setPlayerHand(response.data.playerHand);
-        setDealerHand(response.data.dealerHand);
-    });
-    setRevealCard(false);
-    setReset(false);
-    setAlert(false);
-  }, [bet, setPlayerHand, setDealerHand, setRevealCard, setReset, setAlert]);
+  // startGame is called when the user presses the 'W' key to begin a new game
+  const startGame = useCallback(async () => {
+    try {
+      const response = await axios.post("/api/game/start");
+      const gameData = response.data;
 
-  const hit = useCallback(() => {
-    fetch("/api/deck/hit")
-      .then((response) => {
-        if (!response.ok) throw new Error(response.status);
-        else return response.json();
-      })
-      .then((data) => {
-        console.log(data);
-        if (data.bust) {
-          handleBust();
-        }
-        setPlayerHand(data.playerHand);
-      });
-  }, [handleBust, setPlayerHand]);
+      setGameSessionId(gameData.sessionId);
+      setPlayerHand(gameData.playerHand);
+      setDealerHand(gameData.dealerHand);
+      setRevealCard(false);
+      setReset(false);
+      setAlert(false);
+      setGameResult(null);
+    } catch (error) {
+      console.error("Error starting game:", error);
+    }
+  }, [setPlayerHand, setDealerHand, setRevealCard, setReset, setAlert]);
 
-  const stay = useCallback(() => {
-    setRevealCard(true);
-    setAlert(true);
-    fetch("/api/stay")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data.chips);
-        setAlertMessage(data.alertMessage);
-        setChips(data.chips);
-        setDealerHand(data.dealerHand);
+  const hit = useCallback(async () => {
+    if (!gameSessionId) return;
+
+    try {
+      const response = await axios.post("/api/game/hit", { sessionId: gameSessionId });
+      const gameData = response.data;
+
+      setPlayerHand(gameData.playerHand);
+
+      if (gameData.isBusted) {
+        handleGameOver(gameData.finalScore || 0, 'lose');
+      }
+    } catch (error) {
+      console.error("Error hitting:", error);
+    }
+  }, [gameSessionId, setPlayerHand]);
+
+  const stay = useCallback(async () => {
+    if (!gameSessionId) return;
+
+    try {
+      const response = await axios.post("/api/game/stand", { sessionId: gameSessionId });
+      const gameData = response.data;
+
+      setDealerHand(gameData.dealerHand);
+      setRevealCard(true);
+
+      // Show result and prompt for score submission
+      handleGameOver(gameData.finalScore, gameData.result);
+    } catch (error) {
+      console.error("Error standing:", error);
+    }
+  }, [gameSessionId, setDealerHand, setRevealCard]);
+
+  const handleGameOver = useCallback((score, result) => {
+    setFinalScore(score);
+    setGameResult(result);
+    setShowScoreModal(true);
+    setPlaying(false);
+  }, [setFinalScore, setGameResult, setShowScoreModal, setPlaying]);
+
+  const submitScore = useCallback(async (username) => {
+    if (!username.trim()) return;
+
+    try {
+      await axios.post("/api/scores/submit", {
+        username: username.trim(),
+        score: finalScore
       });
-  }, [setRevealCard, setAlert, setAlertMessage, setChips, setDealerHand]);
+
+      setShowScoreModal(false);
+      setAlertMessage(`Score submitted! You ${gameResult === 'win' ? 'won' : 'lost'}.`);
+      setAlert(true);
+    } catch (error) {
+      console.error("Error submitting score:", error);
+      setAlertMessage("Failed to submit score. Try again.");
+      setAlert(true);
+    }
+  }, [finalScore, gameResult, setShowScoreModal, setAlertMessage, setAlert]);
 
   const handleKeyDown = useCallback((e) => {
     if (isPlaying) {
@@ -128,7 +155,7 @@ function App() {
         // Deal
         case "w":
           console.log("deal");
-          dealDeck();
+          startGame();
           handlePlaying();
           break;
         // Increase Bet
@@ -170,21 +197,9 @@ function App() {
         // Do nothing the user hit an unsupported key
       }
     }
-  }, [isPlaying, bet, maxBet, setBet, dealDeck, handlePlaying, hit, stay]);
+  }, [isPlaying, bet, maxBet, setBet, startGame, handlePlaying, hit, stay]);
 
-  // Call new deck when page loads
-  useEffect(() => {
-    // Make call to api for a new game state
-    // TODO: Handle multiple players
-    fetch("/api/deck/new")
-      .then((response) => response.json())
-      .then((data) => {
-        setCasino(data.casino);
-        setChips(data.chips);
-        setEarnings(data.earnings);
-        setMaxBet(data.maxBet);
-      });
-  }, []);
+
 
   // Handle keypresses so it feels more like the fallout game
   useEffect(() => {
@@ -207,9 +222,57 @@ function App() {
           gameReset={gameReset}
         />
       </div>
-      <div className="h-44">
-        {alert ? <Alert message={alertMessage}></Alert> : <p></p>}
-      </div>
+       <div className="h-44">
+         {alert ? <Alert message={alertMessage}></Alert> : <p></p>}
+       </div>
+
+       {/* Score Submission Modal */}
+       {showScoreModal && (
+         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+           <div className="bg-zinc-900 border-2 border-fallout-green p-6 rounded-lg max-w-md w-full mx-4">
+             <h2 className="text-fallout-green font-robotomono text-xl mb-4 text-center">
+               Game Over!
+             </h2>
+             <p className="text-zinc-200 mb-4 text-center">
+               Final Score: <span className="text-fallout-green font-bold">{finalScore}</span>
+             </p>
+             <p className="text-zinc-200 mb-6 text-center">
+               Result: <span className={`font-bold ${gameResult === 'win' ? 'text-green-400' : 'text-red-400'}`}>
+                 {gameResult === 'win' ? 'You Won!' : gameResult === 'push' ? 'Push' : 'You Lost'}
+               </span>
+             </p>
+
+             <div className="mb-4">
+               <label className="block text-zinc-200 mb-2">Enter username for leaderboard:</label>
+               <input
+                 type="text"
+                 id="username-input"
+                 className="w-full bg-zinc-800 border border-fallout-green text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-green-400"
+                 placeholder="Your username"
+                 maxLength={20}
+               />
+             </div>
+
+             <div className="flex gap-3">
+               <button
+                 onClick={() => {
+                   const username = document.getElementById('username-input').value;
+                   submitScore(username);
+                 }}
+                 className="flex-1 bg-fallout-green hover:bg-green-600 text-zinc-900 font-bold py-2 px-4 rounded transition-colors"
+               >
+                 Submit Score
+               </button>
+               <button
+                 onClick={() => setShowScoreModal(false)}
+                 className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 font-bold py-2 px-4 rounded transition-colors"
+               >
+                 Skip
+               </button>
+             </div>
+           </div>
+         </div>
+       )}
       {/* Top row */}
       <div className="h-3/4">
         {/* <Button variant="contained" onClick={dealDeck}>
