@@ -242,15 +242,16 @@ function App() {
     };
    }, [handleKeyDown]);
 
-  // Warn on refresh
+  // Warn on refresh when in game
   useEffect(() => {
+    if (!sessionId) return;
     const handleBeforeUnload = (e) => {
       e.preventDefault();
       e.returnValue = "Are you sure? You'll lose all progress.";
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, []);
+  }, [sessionId]);
 
   // Redirect to home if no session (e.g., on refresh)
   useEffect(() => {
