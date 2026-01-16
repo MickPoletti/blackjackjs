@@ -201,6 +201,11 @@ app.get('/', (req, res) => {
 // Game API Endpoints
 app.post('/api/game/start', (req, res) => {
   try {
+    const { bet, chips } = req.body;
+    if (!bet || bet <= 0 || bet > chips) {
+      return res.status(400).json({ error: 'Invalid bet amount' });
+    }
+
     const sessionId = Math.random().toString(36).substring(7);
     const gameDeck = createDeck();
 
@@ -217,7 +222,9 @@ app.post('/api/game/start', (req, res) => {
       dealerScore: calculateScore([dealerHand[0]]), // Only count dealer's visible card
       gamePhase: 'playing',
       isBusted: false,
-      dealerRevealed: false
+      dealerRevealed: false,
+      bet,
+      chips
     };
 
     gameSessions.set(sessionId, gameState);
@@ -251,7 +258,9 @@ app.post('/api/game/hit', (req, res) => {
     // Check for bust
     if (gameState.playerScore > 21) {
       gameState.isBusted = true;
-      gameState.gamePhase = 'busted';
+      gameState.gamePhase = 'finished';
+      gameState.result = 'lose';
+      gameState.chips -= gameState.bet; // Lose bet on bust
     }
 
     gameSessions.set(sessionId, gameState);
@@ -260,7 +269,10 @@ app.post('/api/game/hit', (req, res) => {
       playerHand: gameState.playerHand,
       playerScore: gameState.playerScore,
       isBusted: gameState.isBusted,
-      gamePhase: gameState.gamePhase
+      gamePhase: gameState.gamePhase,
+      result: gameState.result || null,
+      chips: gameState.chips,
+      chipsChange: gameState.isBusted ? -gameState.bet : 0
     });
   } catch (error) {
     console.error('Error hitting:', error);
@@ -297,6 +309,15 @@ app.post('/api/game/stand', (req, res) => {
       result = 'push'; // Tie
     }
 
+    // Update chips based on result
+    let chipsChange = 0;
+    if (result === 'win') {
+      chipsChange = gameState.bet;
+    } else if (result === 'lose') {
+      chipsChange = -gameState.bet;
+    }
+    gameState.chips += chipsChange;
+
     gameState.gamePhase = 'finished';
     gameState.result = result;
     gameSessions.set(sessionId, gameState);
@@ -310,7 +331,9 @@ app.post('/api/game/stand', (req, res) => {
       playerScore: gameState.playerScore,
       result,
       finalScore,
-      gamePhase: gameState.gamePhase
+      gamePhase: gameState.gamePhase,
+      chips: gameState.chips,
+      chipsChange
     });
   } catch (error) {
     console.error('Error standing:', error);

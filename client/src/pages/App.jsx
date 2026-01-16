@@ -7,6 +7,7 @@ import axios from "axios";
 import { Navigate } from 'react-router-dom';
 
 
+
 function App() {
   const [playerHand, setPlayerHand] = useState([{}]);
   const [dealerHand, setDealerHand] = useState([{}]);
@@ -16,32 +17,56 @@ function App() {
   const [revealCard, setRevealCard] = useState([{}]);
   const [isPlaying, setPlaying] = useState(false);
   const [bet, setBet] = useState(1);
-  const [maxBet, setMaxBet] = useState(10000);
-  const [chips, setChips] = useState(0);
-  const [earnings, setEarnings] = useState(0);
-  const [casino, setCasino] = useState("Tops");
+  const maxBet = 10000;
+  const [chips, setChips] = useState(100);
+  const earnings = 0;
+  const casino = "Tops";
   const [gameSessionId, setGameSessionId] = useState(null);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [gameResult, setGameResult] = useState(null);
+  const [gameEnded, setGameEnded] = useState(false);
 
   const handlePlaying = useCallback(() => {
     setPlaying(!isPlaying);
   }, [isPlaying, setPlaying]);
 
-  const handleBust = useCallback(() => {
-    setAlertMessage("You bust!");
-    setAlert(true);
-    setReset(true);
-    setPlaying(false);
-  }, [setAlertMessage, setAlert, setReset, setPlaying]);
-
   /* Begin functions to handle calls to api */
+
+  const handleGameOver = useCallback((score, result, serverChips, chipsChange) => {
+    setChips(serverChips);
+    setFinalScore(score);
+    setGameResult(result);
+    setGameEnded(true);
+    setPlaying(false);
+
+    let message = '';
+    if (result === 'win') {
+      message = `You win ${Math.abs(chipsChange)} caps!`;
+    } else if (result === 'lose') {
+      message = `You lose ${Math.abs(chipsChange)} caps!`;
+    } else if (result === 'push') {
+      message = 'Push! No caps change.';
+    }
+
+    if (serverChips <= 0 && result === 'lose') {
+      message = 'Game over! You\'re out of caps.';
+    }
+
+    setAlertMessage(message);
+    setAlert(true);
+  }, [setChips, setFinalScore, setGameResult, setGameEnded, setPlaying, setAlertMessage, setAlert]);
 
   // startGame is called when the user presses the 'W' key to begin a new game
   const startGame = useCallback(async () => {
+    if (chips <= 0) {
+      setAlertMessage("You're out of caps! Can't start a new game.");
+      setAlert(true);
+      return;
+    }
+
     try {
-      const response = await axios.post("/api/game/start");
+      const response = await axios.post("/api/game/start", { bet, chips });
       const gameData = response.data;
 
       setGameSessionId(gameData.sessionId);
@@ -54,7 +79,7 @@ function App() {
     } catch (error) {
       console.error("Error starting game:", error);
     }
-  }, [setPlayerHand, setDealerHand, setRevealCard, setReset, setAlert]);
+  }, [bet, chips, setAlertMessage, setAlert, setPlayerHand, setDealerHand, setRevealCard, setReset]);
 
   const hit = useCallback(async () => {
     if (!gameSessionId) return;
@@ -63,15 +88,15 @@ function App() {
       const response = await axios.post("/api/game/hit", { sessionId: gameSessionId });
       const gameData = response.data;
 
-      setPlayerHand(gameData.playerHand);
+       setPlayerHand(gameData.playerHand);
 
-      if (gameData.isBusted) {
-        handleGameOver(gameData.finalScore || 0, 'lose');
-      }
+       if (gameData.isBusted) {
+         handleGameOver(gameData.finalScore || 0, gameData.result, gameData.chips, gameData.chipsChange);
+       }
     } catch (error) {
       console.error("Error hitting:", error);
     }
-  }, [gameSessionId, setPlayerHand]);
+  }, [gameSessionId, setPlayerHand, handleGameOver]);
 
   const stay = useCallback(async () => {
     if (!gameSessionId) return;
@@ -83,19 +108,13 @@ function App() {
       setDealerHand(gameData.dealerHand);
       setRevealCard(true);
 
-      // Show result and prompt for score submission
-      handleGameOver(gameData.finalScore, gameData.result);
+       // Show result and prompt for score submission
+       handleGameOver(gameData.finalScore, gameData.result, gameData.chips, gameData.chipsChange);
     } catch (error) {
       console.error("Error standing:", error);
     }
-  }, [gameSessionId, setDealerHand, setRevealCard]);
+  }, [gameSessionId, setDealerHand, setRevealCard, handleGameOver]);
 
-  const handleGameOver = useCallback((score, result) => {
-    setFinalScore(score);
-    setGameResult(result);
-    setShowScoreModal(true);
-    setPlaying(false);
-  }, [setFinalScore, setGameResult, setShowScoreModal, setPlaying]);
 
   const submitScore = useCallback(async (username) => {
     if (!username.trim()) return;
@@ -107,8 +126,10 @@ function App() {
       });
 
       setShowScoreModal(false);
+      setGameEnded(false);
       setAlertMessage(`Score submitted! You ${gameResult === 'win' ? 'won' : 'lost'}.`);
       setAlert(true);
+      window.location = '/';
     } catch (error) {
       console.error("Error submitting score:", error);
       setAlertMessage("Failed to submit score. Try again.");
@@ -159,18 +180,26 @@ function App() {
           handlePlaying();
           break;
         // Increase Bet
-        case "e":
+        case "e": {
+          let newBet;
           if (bet >= maxBet) break;
           if (bet >= 0 && bet < 10) {
-            setBet(bet + 1);
+            newBet = bet + 1;
           } else if (bet >= 10 && bet < 100) {
-            setBet(bet + 10);
+            newBet = bet + 10;
           } else if (bet >= 100 && bet < 1000) {
-            setBet(bet + 100);
+            newBet = bet + 100;
           } else {
-            setBet(bet + 1000);
+            newBet = bet + 1000;
+          }
+          if (newBet > chips) {
+            setAlertMessage("Insufficient caps!");
+            setAlert(true);
+          } else {
+            setBet(newBet);
           }
           break;
+        }
         // Decrease Bet
         case "q":
           if (bet <= 0) break;
@@ -186,18 +215,22 @@ function App() {
           break;
         // Bet Max
         case "s":
-          setBet(maxBet);
+          setBet(Math.min(maxBet, chips));
           break;
         // Exit
         // This goes to landing page (home screen)
         case "r":
-          window.location = '/';
+          if (gameEnded) {
+            setShowScoreModal(true);
+          } else {
+            window.location = '/';
+          }
           break;
         default:
         // Do nothing the user hit an unsupported key
       }
     }
-  }, [isPlaying, bet, maxBet, setBet, startGame, handlePlaying, hit, stay]);
+  }, [isPlaying, bet, maxBet, setBet, chips, gameEnded, startGame, handlePlaying, hit, stay, setAlertMessage, setAlert]);
 
 
 
@@ -263,12 +296,16 @@ function App() {
                >
                  Submit Score
                </button>
-               <button
-                 onClick={() => setShowScoreModal(false)}
-                 className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 font-bold py-2 px-4 rounded transition-colors"
-               >
-                 Skip
-               </button>
+                <button
+                  onClick={() => {
+                    setShowScoreModal(false);
+                    setGameEnded(false);
+                    window.location = '/';
+                  }}
+                  className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 font-bold py-2 px-4 rounded transition-colors"
+                >
+                  Skip
+                </button>
              </div>
            </div>
          </div>
