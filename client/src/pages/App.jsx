@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Deck from "../components/Deck";
 import Alert from "../components/Alert";
 import Controls from "../components/Controls";
@@ -21,18 +21,75 @@ function App() {
   const [earnings, setEarnings] = useState(0);
   const [casino, setCasino] = useState("Tops");
 
-  const handlePlaying = () => {
+  const handlePlaying = useCallback(() => {
     setPlaying(!isPlaying);
-  };
+  }, [isPlaying, setPlaying]);
 
-  function handleBust() {
+  const handleBust = useCallback(() => {
     setAlertMessage("You bust!");
     setAlert(true);
     setReset(true);
     setPlaying(false);
-  }
+  }, [setAlertMessage, setAlert, setReset, setPlaying]);
 
-  function handleKeyDown(e) {
+  /* Begin functions to handle calls to api */
+
+  // dealDeck is called when the user presses the 'W' key and is
+  // responsible for sending the api the current user state.
+  // I.e (player hand, the dealer hand state and the current bet)
+  // TODO: perhaps should make the chips handling all back end
+  const dealDeck = useCallback(() => {
+    axios.post("api/deck/deal", {
+      currentBet: bet
+    })
+    // fetch("/api/deck/deal", {
+    //   method: 'POST',
+    //   headers: {
+    //     'Accept': 'application/json',
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({"currentBet": bet,
+    //   })
+    // })
+      // .then((response) => response.json())
+      .then((response) => {
+        setPlayerHand(response.data.playerHand);
+        setDealerHand(response.data.dealerHand);
+    });
+    setRevealCard(false);
+    setReset(false);
+    setAlert(false);
+  }, [bet, setPlayerHand, setDealerHand, setRevealCard, setReset, setAlert]);
+
+  const hit = useCallback(() => {
+    fetch("/api/deck/hit")
+      .then((response) => {
+        if (!response.ok) throw new Error(response.status);
+        else return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        if (data.bust) {
+          handleBust();
+        }
+        setPlayerHand(data.playerHand);
+      });
+  }, [handleBust, setPlayerHand]);
+
+  const stay = useCallback(() => {
+    setRevealCard(true);
+    setAlert(true);
+    fetch("/api/stay")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data.chips);
+        setAlertMessage(data.alertMessage);
+        setChips(data.chips);
+        setDealerHand(data.dealerHand);
+      });
+  }, [setRevealCard, setAlert, setAlertMessage, setChips, setDealerHand]);
+
+  const handleKeyDown = useCallback((e) => {
     if (isPlaying) {
       switch (e.key) {
         // Hit
@@ -113,13 +170,10 @@ function App() {
         // Do nothing the user hit an unsupported key
       }
     }
-  }
+  }, [isPlaying, bet, maxBet, setBet, dealDeck, handlePlaying, hit, stay]);
 
   // Call new deck when page loads
   useEffect(() => {
-    // Start alert in off mode
-    setAlert(false);
-    setAlertMessage("");
     // Make call to api for a new game state
     // TODO: Handle multiple players
     fetch("/api/deck/new")
@@ -138,66 +192,9 @@ function App() {
     return function cleanup() {
       document.removeEventListener("keypress", handleKeyDown);
     };
-  }, [handleKeyDown]);
+   }, [handleKeyDown]);
 
-  /* Begin functions to handle calls to api */
-
-  // dealDeck is called when the user presses the 'W' key and is
-  // responsible for sending the api the current user state.
-  // I.e (player hand, the dealer hand state and the current bet)
-  // TODO: perhaps should make the chips handling all back end
-  function dealDeck() {
-    axios.post("api/deck/deal", {
-      currentBet: bet
-    })
-    // fetch("/api/deck/deal", {
-    //   method: 'POST',
-    //   headers: {
-    //     'Accept': 'application/json',
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({"currentBet": bet,
-    //   })
-    // })
-      // .then((response) => response.json())
-      .then((response) => {
-        setPlayerHand(response.data.playerHand);
-        setDealerHand(response.data.dealerHand);
-    });
-    setRevealCard(false);
-    setReset(false);
-    setAlert(false);
-  }
-
-  function hit() {
-    fetch("/api/deck/hit")
-      .then((response) => {
-        if (!response.ok) throw new Error(response.status);
-        else return response.json();
-      })
-      .then((data) => {
-        console.log(data);
-        if (data.bust) {
-          handleBust();
-        }
-        setPlayerHand(data.playerHand);
-      });
-  }
-
-  function stay() {
-    setRevealCard(true);
-    setAlert(true);
-    fetch("/api/stay")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data.chips);
-        setAlertMessage(data.alertMessage);
-        setChips(data.chips);
-        setDealerHand(data.dealerHand);
-      });
-  }
-
-  return (
+   return (
     <div className="h-screen w-screen flex flex-col bg-game-table bg-center bg-cover">
       <Link to="/" className="font-robotomono text-slate-200 px-10 py-5 bg-zinc-900">
         FNV BLACKJACK
