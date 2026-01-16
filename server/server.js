@@ -232,7 +232,7 @@ app.post('/api/game/start', (req, res) => {
       playerHand,
       dealerHand,
       playerScore: calculateScore(playerHand),
-      dealerScore: calculateScore([dealerHand[0]]), // Only count dealer's visible card
+      dealerScore: calculateScore(dealerHand), // Full dealer score (internal to server)
       gamePhase: 'playing',
       isBusted: false,
       dealerRevealed: false,
@@ -244,7 +244,7 @@ app.post('/api/game/start', (req, res) => {
     res.json({
       sessionId,
       playerHand,
-      dealerHand: [dealerHand[0], { name: 'hidden' }], // Hide dealer's second card
+      dealerHand: [{ name: 'hidden', img: '/png/tops_card.webp' }, dealerHand[1]], // Hide dealer's first card
       playerScore: gameState.playerScore
     });
   } catch (error) {
