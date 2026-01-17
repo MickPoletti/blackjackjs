@@ -101,7 +101,7 @@ code {
   position: absolute;
   box-sizing: border-box;
   background: white;
-  clip-path: polygon(0% 0%, 100% 0%, 80% 100%, 20% 100%);
+  clip-path: polygon(0% 0%, 75% 0%, 100% 100%, 25% 100%);
 }
 
 .casino-img {
@@ -110,7 +110,7 @@ code {
   left: 4px;
   width: calc(100% - 8px);
   height: calc(100% - 8px);
-  clip-path: polygon(0% 0%, 100% 0%, 80% 100%, 20% 100%);
+  clip-path: polygon(0% 0%, 75% 0%, 100% 100%, 25% 100%);
   filter: blur(2px) brightness(1);
 }
 
