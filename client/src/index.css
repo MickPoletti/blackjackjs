@@ -78,3 +78,15 @@ code {
   width: 10vw;
   min-width: 90px;
 }
+
+.home-background {
+  background-image:
+    linear-gradient(45deg, rgba(51, 221, 126, 0.15) 25%, transparent 25%, transparent 75%, rgba(51, 221, 126, 0.15) 75%),
+    url('/png/tops_casino.jpg'),
+    linear-gradient(-45deg, rgba(51, 221, 126, 0.15) 25%, transparent 25%, transparent 75%, rgba(51, 221, 126, 0.15) 75%),
+    url('/png/ultra_luxe_casino.jpg');
+  background-size: 50% 50%, cover, 50% 50%, cover;
+  background-position: top left, center, bottom right, center;
+  background-repeat: no-repeat;
+  filter: blur(3px) brightness(0.7);
+}
