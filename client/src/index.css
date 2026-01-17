@@ -112,7 +112,7 @@ code {
   width: calc(100% - 8px);
   height: calc(100% - 8px);
   clip-path: polygon(0% 0%, 75% 0%, 100% 100%, 25% 100%);
-  filter: blur(4px) brightness(0.3);
+  filter: blur(4px) brightness(0.5);
 }
 
 .tops-image {
