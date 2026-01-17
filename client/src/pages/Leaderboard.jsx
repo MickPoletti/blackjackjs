@@ -94,12 +94,11 @@ function Leaderboard() {
             )}
 
             <div className="text-center mt-8">
-              <a
-                href="/app"
+              <Link to="/"
                 className="inline-block bg-fallout-green hover:bg-green-600 text-zinc-900 font-bold py-3 px-8 rounded transition-colors"
               >
                 Play Blackjack
-              </a>
+              </Link>
             </div>
           </div>
         )}
