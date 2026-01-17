@@ -111,33 +111,33 @@ code {
   width: calc(100% - 8px);
   height: calc(100% - 8px);
   clip-path: polygon(0% 0%, 75% 0%, 100% 100%, 25% 100%);
-  filter: blur(2px) brightness(1);
+  filter: blur(4px) brightness(1);
 }
 
 .tops-image {
-  left: 0%;
-  top: 49%;
+  left: 10%;
+  top: 0%;
   width: 25%;
-  height: 50%;
+  height: 100%;
 }
 
 .lucky-image {
-  left: 25%;
-  top: 49%;
+  left: 29%;
+  top: 0%;
   width: 25%;
-  height: 50%;
+  height: 100%;
 }
 
 .gomorrah-image {
-  left: 50%;
-  top: 49%;
+  left: 48%;
+  top: 0%;
   width: 25%;
-  height: 50%;
+  height: 100%;
 }
 
 .ultra-image {
-  left: 75%;
-  top: 49%;
+  left: 67%;
+  top: 0%;
   width: 25%;
-  height: 50%;
+  height: 100%;
 }
