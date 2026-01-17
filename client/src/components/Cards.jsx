@@ -2,7 +2,7 @@ import { useState } from "react";
 import Card from "./Card";
 
 function Cards() {
-  const [items, setItems] = useState([
+  const [items] = useState([
     { value: 2, img: "/png/cards/2_of_clubs.png" },
     { value: 2, img: "/png/cards/2_of_diamonds.png" },
     { value: 2, img: "/png/cards/2_of_hearts.png" },

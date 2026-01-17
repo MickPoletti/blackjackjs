@@ -21,7 +21,6 @@
   align-items: center;
 } */
 
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -77,4 +76,69 @@ code {
   height: 20vh;
   width: 10vw;
   min-width: 90px;
+}
+
+.home-background {
+  position: relative;
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.background-layer {
+  position: absolute;
+  width: 150%;
+  top: 0;
+  left: -25%;
+  right: auto;
+  bottom: 0;
+  background-color: #000000;
+  z-index: -1;
+}
+
+.casino-image {
+  position: absolute;
+  box-sizing: border-box;
+  background: red;
+  clip-path: polygon(0% 0%, 75% 0%, 100% 100%, 25% 100%);
+}
+
+.casino-img {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+  clip-path: polygon(0% 0%, 75% 0%, 100% 100%, 25% 100%);
+  filter: blur(4px) brightness(0.5);
+}
+
+.tops-image {
+  left: 10%;
+  top: 0%;
+  width: 25%;
+  height: 100%;
+}
+
+.lucky-image {
+  left: 29%;
+  top: 0%;
+  width: 25%;
+  height: 100%;
+}
+
+.gomorrah-image {
+  left: 48%;
+  top: 0%;
+  width: 25%;
+  height: 100%;
+}
+
+.ultra-image {
+  left: 67%;
+  top: 0%;
+  width: 25%;
+  height: 100%;
 }
