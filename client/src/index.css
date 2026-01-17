@@ -101,7 +101,7 @@ code {
 .casino-image {
   position: absolute;
   box-sizing: border-box;
-  background: white;
+  background: red;
   clip-path: polygon(0% 0%, 75% 0%, 100% 100%, 25% 100%);
 }
 
@@ -112,7 +112,7 @@ code {
   width: calc(100% - 8px);
   height: calc(100% - 8px);
   clip-path: polygon(0% 0%, 75% 0%, 100% 100%, 25% 100%);
-  filter: blur(4px) brightness(1);
+  filter: blur(4px) brightness(0.3);
 }
 
 .tops-image {
