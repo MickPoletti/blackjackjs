@@ -21,7 +21,6 @@
   align-items: center;
 } */
 
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -107,38 +106,38 @@ code {
 
 .casino-img {
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: calc(100% - 4px);
-  height: calc(100% - 4px);
+  top: 4px;
+  left: 4px;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  filter: blur(3px) brightness(0.9);
+  filter: blur(2px) brightness(1);
 }
 
 .tops-image {
   left: 0%;
-  top: 25%;
+  top: 49%;
   width: 25%;
   height: 50%;
 }
 
 .lucky-image {
   left: 25%;
-  top: 25%;
+  top: 49%;
   width: 25%;
   height: 50%;
 }
 
 .gomorrah-image {
   left: 50%;
-  top: 25%;
+  top: 49%;
   width: 25%;
   height: 50%;
 }
 
 .ultra-image {
   left: 75%;
-  top: 25%;
+  top: 49%;
   width: 25%;
   height: 50%;
 }
