@@ -15,7 +15,7 @@ function App() {
   const [alert, setAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [gameReset, setReset] = useState(false);
-  const [revealCard, setRevealCard] = useState([{}]);
+  const [revealCard, setRevealCard] = useState(false);
   const [isPlaying, setPlaying] = useState(false);
   const [bet, setBet] = useState(1);
   const maxBet = 10000;
