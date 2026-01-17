@@ -1,7 +1,7 @@
 import Card from "./Card";
 
-export default function Controls({ isPlaying }) {
-  if (!isPlaying) {
+export default function Controls({ isplaying }) {
+  if (!isplaying) {
     return (
       <div className="font-robotomono text-fallout-green">
         <div className=" ml-4 mt-1">
