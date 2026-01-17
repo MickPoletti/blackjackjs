@@ -37,8 +37,8 @@ function Home() {
         </div>
       </div>
       <div className="content-wrapper">
-        <img src="/png/fnv_logo.png" alt="FNV Blackjack" className="font-robotomono text-zinc-50 font-extrabold stroke-indigo-400 text-9xl top-[100px]" />
-        <div className="flex flex-col mt-12 items-center">
+        <img src="/png/fnv_logo.png" alt="FNV Blackjack" className="font-robotomono text-zinc-50 font-extrabold stroke-indigo-400 text-6xl top-[20px]" />
+        <div className="flex flex-col mt-6 items-center">
          {/* Sends player to the game */}
          <button onClick={handlePlay} disabled={loading} className=" box-border w-96 border-2 py-5 px-28 mt-5 text-lg text-center items-center hover:bg-fallout-green text-zinc-50 disabled:opacity-50">
            {loading ? "Loading..." : "Play"}
