@@ -89,9 +89,10 @@ code {
 
 .background-layer {
   position: absolute;
+  width: 150%;
   top: 0;
-  left: 0;
-  right: 0;
+  left: -25%;
+  right: auto;
   bottom: 0;
   background-color: #000000;
   z-index: -1;
