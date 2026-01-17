@@ -102,6 +102,7 @@ code {
   position: absolute;
   box-shadow: 0 0 0 2px white;
   box-sizing: border-box;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
   background-repeat: no-repeat;
   background-size: cover;
   filter: blur(3px) brightness(0.9);
