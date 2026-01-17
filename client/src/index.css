@@ -95,45 +95,14 @@ code {
   right: 0;
   bottom: 0;
   background-color: #000000;
-  z-index: -1;
-}
-
-.casino-image {
-  position: absolute;
-  border: 2px solid white;
+  background-image:
+    url('/png/tops_casino.png'),
+    url('/png/lucky_38_casino.jpg'),
+    url('/png/gomorrah_casino.jpg'),
+    url('/png/ultra_luxe_casino.jpg');
+  background-size: 25% 50%, 25% 50%, 25% 50%, 27% 50%;
+  background-position: 0% 60%, 33% 60%, 66% 60%, 100% 60%;
   background-repeat: no-repeat;
-  background-size: cover;
   filter: blur(3px) brightness(0.9);
-}
-
-.tops-image {
-  background-image: url('/png/tops_casino.png');
-  left: 0%;
-  top: 60%;
-  width: 25%;
-  height: 50%;
-}
-
-.lucky-image {
-  background-image: url('/png/lucky_38_casino.jpg');
-  left: 33%;
-  top: 60%;
-  width: 25%;
-  height: 50%;
-}
-
-.gomorrah-image {
-  background-image: url('/png/gomorrah_casino.jpg');
-  left: 66%;
-  top: 60%;
-  width: 25%;
-  height: 50%;
-}
-
-.ultra-image {
-  background-image: url('/png/ultra_luxe_casino.jpg');
-  left: 100%;
-  top: 60%;
-  width: 27%;
-  height: 50%;
+  z-index: -1;
 }
