@@ -1,8 +1,14 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 function Layout({ children }) {
   const [soundOn, setSoundOn] = useState(false);
   const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+    }
+  }, []);
 
   const toggleSound = () => {
     setSoundOn(!soundOn);
