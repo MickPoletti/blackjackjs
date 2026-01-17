@@ -1,7 +1,7 @@
 import Card from "./Card";
 
 export default function Deck({ deck, isDealer, revealCard, gameReset }) {
-  if (Object.keys(deck).length > 1 && !isDealer && !gameReset) {
+  if (deck.length > 1 && !isDealer && !gameReset) {
     return (
       <div className="flex flex-wrap bg-slate-800 rounded-lg border-amber-500 border-2 gap-3 p-3">
         {deck.map((item, index) => (
@@ -9,9 +9,9 @@ export default function Deck({ deck, isDealer, revealCard, gameReset }) {
         ))}
       </div>
     );
-  } else if (Object.keys(deck).length > 1 && !gameReset) {
+  } else if (deck.length > 1 && !gameReset) {
     let localDeck = [];
-    for (let i = 0; i < Object.keys(deck).length; i++) {
+    for (let i = 0; i < deck.length; i++) {
       if (i === 0 && !revealCard) {
         let hiddenCard = {
           img: "/png/tops_card.webp",
