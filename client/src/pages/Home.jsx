@@ -1,60 +1,28 @@
 import { BrowserRouter as Router, Route, Link, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import axios from "axios";
 
 function Home() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
-  const playerRef = useRef(null);
-
-  useEffect(() => {
-    if (!window.YT) {
-      const script = document.createElement('script');
-      script.src = 'https://www.youtube.com/iframe_api';
-      document.body.appendChild(script);
-      script.onload = () => {
-        window.onYouTubeIframeAPIReady = () => {
-          playerRef.current = new window.YT.Player('youtube-player', {
-            videoId: 'kXfQ7AB-hEM',
-            playerVars: {
-              autoplay: 1,
-              mute: 1,
-              loop: 1,
-              playlist: 'kXfQ7AB-hEM',
-            },
-            events: {
-              onReady: (event) => {
-                event.target.playVideo();
-              },
-            },
-          });
-        };
-      };
-    } else {
-      playerRef.current = new window.YT.Player('youtube-player', {
-        videoId: 'kXfQ7AB-hEM',
-        playerVars: {
-          autoplay: 1,
-          mute: 1,
-          loop: 1,
-          playlist: 'kXfQ7AB-hEM',
-        },
-        events: {
-          onReady: (event) => {
-            event.target.playVideo();
-          },
-        },
-      });
-    }
-  }, []);
+  const [loaded, setLoaded] = useState(false);
+  const iframeRef = useRef(null);
 
   const toggleSound = () => {
-    if (playerRef.current) {
+    if (!loaded) {
+      iframeRef.current.src = 'https://www.youtube.com/embed/kXfQ7AB-hEM?autoplay=1&mute=1&loop=1&playlist=kXfQ7AB-hEM';
+      setLoaded(true);
+      setSoundOn(true);
+      // Unmute after a short delay to ensure load
+      setTimeout(() => {
+        iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute', args: '' }), '*');
+      }, 1000);
+    } else {
       if (soundOn) {
-        playerRef.current.mute();
+        iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute', args: '' }), '*');
       } else {
-        playerRef.current.unMute();
+        iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute', args: '' }), '*');
       }
       setSoundOn(!soundOn);
     }
@@ -110,7 +78,7 @@ function Home() {
           <Link className="font-extrabold box-border w-96 border-2 py-5 px-28 mt-5 text-lg text-center items-center bg-red-800 border-red-500 rounded-lg shadow-lg font-mono hover:bg-red-600 text-zinc-50">Exit</Link>
         </div>
       </div>
-      <div id="youtube-player" style={{ display: 'none' }}></div>
+      <iframe ref={iframeRef} style={{ display: 'none' }}></iframe>
     </div>
   );
 }
