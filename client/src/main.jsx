@@ -5,18 +5,21 @@ import './index.css';
 import App from './pages/App';
 import Home from './pages/Home';
 import Leaderboard from './pages/Leaderboard';
+import Layout from './components/Layout';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route path="/">
-          <Route index element={<Home/>}/>
-          <Route path="app" element={<App/>}/>
-          <Route path="leaderboard" element={<Leaderboard/>}/>
-        </Route>
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/">
+            <Route index element={<Home/>}/>
+            <Route path="app" element={<App/>}/>
+            <Route path="leaderboard" element={<Leaderboard/>}/>
+          </Route>
+        </Routes>
+      </Layout>
     </BrowserRouter>
   </React.StrictMode>
 );

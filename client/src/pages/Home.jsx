@@ -1,21 +1,10 @@
 import { BrowserRouter as Router, Route, Link, useNavigate } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import axios from "axios";
 
 function Home() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [soundOn, setSoundOn] = useState(false);
-  const audioRef = useRef(null);
-
-  const toggleSound = () => {
-    setSoundOn(!soundOn);
-    if (!soundOn) {
-      audioRef.current.play();
-    } else {
-      audioRef.current.pause();
-    }
-  };
 
   const handlePlay = async () => {
     setLoading(true);
@@ -48,9 +37,6 @@ function Home() {
         </div>
       </div>
       <div className="content-wrapper">
-        <button onClick={toggleSound} className="absolute top-2 right-2 bg-red-800 p-2 rounded shadow-lg">
-          <i className="material-icons text-white">{soundOn ? 'volume_up' : 'volume_off'}</i>
-        </button>
         <img src="/png/fnv_logo.png" alt="FNV Blackjack" className="h-auto font-robotomono text-zinc-50 font-extrabold stroke-indigo-400 text-6xl top-[20px]" />
         <div className="flex flex-col mt-6 items-center">
          {/* Sends player to the game */}
@@ -67,9 +53,6 @@ function Home() {
           <Link className="font-extrabold box-border w-96 border-2 py-5 px-28 mt-5 text-lg text-center items-center bg-red-800 border-red-500 rounded-lg shadow-lg font-mono hover:bg-red-600 text-zinc-50">Exit</Link>
         </div>
       </div>
-      <audio ref={audioRef} loop>
-        <source src="/audio/fnv-soundtrack.mp3" type="audio/mpeg" />
-      </audio>
     </div>
   );
 }
