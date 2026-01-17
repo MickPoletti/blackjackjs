@@ -206,7 +206,7 @@ function App() {
         // Decrease Bet
         case "q":
           if (bet <= 0) break;
-          if (bet > 0 && bet <= 10) {
+          if (bet > 1 && bet <= 10) {
             setBet(bet - 1);
           } else if (bet > 10 && bet <= 100) {
             setBet(bet - 10);
