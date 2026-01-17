@@ -25,7 +25,7 @@ function Home() {
       <div className="background-layer">
         <div className="casino-image tops-image"></div>
         <div className="casino-image lucky-image"></div>
-        <div className="casino-image gomorra-image"></div>
+        <div className="casino-image gomorrah-image"></div>
         <div className="casino-image ultra-image"></div>
       </div>
       <div className="content-wrapper">

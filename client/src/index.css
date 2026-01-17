@@ -100,16 +100,16 @@ code {
 
 .casino-image {
   position: absolute;
-  box-shadow: 0 0 0 2px white;
+  filter: drop-shadow(0px 0px 0px 2px white);
   box-sizing: border-box;
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
   background-repeat: no-repeat;
   background-size: cover;
-  filter: blur(3px) brightness(0.9);
 }
 
 .tops-image {
   background-image: url('/png/tops_casino.png');
+  background-position: 59% 60%;
   left: 0%;
   top: 25%;
   width: 25%;
@@ -126,6 +126,7 @@ code {
 
 .gomorrah-image {
   background-image: url('/png/gomorrah_casino.jpg');
+  background-position: 59% 60%;
   left: 50%;
   top: 25%;
   width: 25%;
@@ -134,6 +135,7 @@ code {
 
 .ultra-image {
   background-image: url('/png/ultra_luxe_casino.jpg');
+  background-position: 30% 0%;
   left: 75%;
   top: 25%;
   width: 25%;
