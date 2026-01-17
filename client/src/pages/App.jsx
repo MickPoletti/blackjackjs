@@ -332,7 +332,7 @@ function App() {
       <div className="h-3/4">
       </div>{" "}
       {/* Middle row */}
-      <div className="w-screen h-1/3 grid grid-rows-1 grid-cols-3 items-center justify-center">
+      <div className="w-screen h-1/6 grid grid-rows-1 grid-cols-3 items-center justify-center">
         <div className="w-56 h-24 ml-6 border-l-2 border-b-2 border-fallout-green font-robotomono text-fallout-green">
           <div className=" ml-4 mt-1">
             <h3>Current Bet: &nbsp; {bet}</h3>
