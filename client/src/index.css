@@ -83,8 +83,6 @@ code {
   position: relative;
 }
 
-
-
 .content-wrapper {
   position: relative;
   z-index: 1;
@@ -96,23 +94,15 @@ code {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #0f172a;
+  background-color: #000000;
   background-image:
     url('/png/tops_casino.png'),
     url('/png/lucky_38_casino.jpg'),
     url('/png/gomorrah_casino.jpg'),
-    url('/png/ultra_luxe_casino.jpg'),
-    linear-gradient(to right,
-      transparent 0%, transparent 25%,
-      #33dd7e 25%, #33dd7e 26%,
-      transparent 26%, transparent 50%,
-      #33dd7e 50%, #33dd7e 51%,
-      transparent 51%, transparent 75%,
-      #33dd7e 75%, #33dd7e 76%,
-      transparent 76%, transparent 100%);
-  background-size: 25% 100%, 25% 100%, 25% 100%, 25% 100%, 100% 100%;
-  background-position: 0% 0%, 25% 0%, 50% 0%, 75% 0%, 0% 0%;
+    url('/png/ultra_luxe_casino.jpg');
+  background-size: 25% 50%, 25% 50%, 25% 50%, 27% 50%;
+  background-position: 0% 60%, 33% 60%, 66% 60%, 100% 60%;
   background-repeat: no-repeat;
-  filter: blur(1px) brightness(0.9);
+  filter: blur(3px) brightness(0.9);
   z-index: -1;
 }
