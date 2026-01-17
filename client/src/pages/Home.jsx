@@ -21,7 +21,8 @@ function Home() {
     }
   };
   return (
-    <div className="home-background flex flex-col items-center h-screen w-screen bg-slate-900">
+    <div className="home-background flex flex-col items-center h-screen w-screen">
+      <div className="background-layer"></div>
       <div className="content-wrapper">
         <img src="/png/fnv_logo.png" alt="FNV Blackjack" className="font-robotomono text-zinc-50 font-extrabold stroke-indigo-400 text-9xl top-[100px]" />
         <div className="flex flex-col mt-12 items-center">
