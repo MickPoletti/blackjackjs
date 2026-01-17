@@ -22,7 +22,12 @@ function Home() {
   };
   return (
     <div className="home-background flex flex-col items-center h-screen w-screen">
-      <div className="background-layer"></div>
+      <div className="background-layer">
+        <div className="casino-image tops-image"></div>
+        <div className="casino-image lucky-image"></div>
+        <div className="casino-image gomorra-image"></div>
+        <div className="casino-image ultra-image"></div>
+      </div>
       <div className="content-wrapper">
         <img src="/png/fnv_logo.png" alt="FNV Blackjack" className="font-robotomono text-zinc-50 font-extrabold stroke-indigo-400 text-9xl top-[100px]" />
         <div className="flex flex-col mt-12 items-center">
