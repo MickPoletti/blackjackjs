@@ -6,25 +6,14 @@ function Home() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const iframeRef = useRef(null);
+  const audioRef = useRef(null);
 
   const toggleSound = () => {
-    if (!loaded) {
-      iframeRef.current.src = 'https://www.youtube.com/embed/kXfQ7AB-hEM?autoplay=1&mute=1&loop=1&playlist=kXfQ7AB-hEM';
-      setLoaded(true);
-      setSoundOn(true);
-      // Unmute after a short delay to ensure load
-      setTimeout(() => {
-        iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute', args: '' }), '*');
-      }, 1000);
+    setSoundOn(!soundOn);
+    if (!soundOn) {
+      audioRef.current.play();
     } else {
-      if (soundOn) {
-        iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute', args: '' }), '*');
-      } else {
-        iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute', args: '' }), '*');
-      }
-      setSoundOn(!soundOn);
+      audioRef.current.pause();
     }
   };
 
@@ -78,7 +67,9 @@ function Home() {
           <Link className="font-extrabold box-border w-96 border-2 py-5 px-28 mt-5 text-lg text-center items-center bg-red-800 border-red-500 rounded-lg shadow-lg font-mono hover:bg-red-600 text-zinc-50">Exit</Link>
         </div>
       </div>
-      <iframe ref={iframeRef} style={{ display: 'none' }}></iframe>
+      <audio ref={audioRef} loop>
+        <source src="/audio/fnv-soundtrack.mp3" type="audio/mpeg" />
+      </audio>
     </div>
   );
 }
