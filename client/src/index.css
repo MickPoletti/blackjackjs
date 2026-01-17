@@ -101,3 +101,8 @@ code {
   filter: blur(3px) brightness(0.7);
   z-index: -1;
 }
+
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+}
