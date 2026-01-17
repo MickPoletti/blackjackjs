@@ -23,10 +23,18 @@ function Home() {
   return (
     <div className="home-background flex flex-col items-center h-screen w-screen">
       <div className="background-layer">
-        <div className="casino-image tops-image"></div>
-        <div className="casino-image lucky-image"></div>
-        <div className="casino-image gomorrah-image"></div>
-        <div className="casino-image ultra-image"></div>
+        <div className="casino-image tops-image">
+          <img src="/png/tops_casino.png" alt="Tops Casino" className="casino-img" />
+        </div>
+        <div className="casino-image lucky-image">
+          <img src="/png/lucky_38_casino.jpg" alt="Lucky 38 Casino" className="casino-img" />
+        </div>
+        <div className="casino-image gomorrah-image">
+          <img src="/png/gomorrah_casino.jpg" alt="Gomorrah Casino" className="casino-img" />
+        </div>
+        <div className="casino-image ultra-image">
+          <img src="/png/ultra_luxe_casino.jpg" alt="Ultra-Luxe Casino" className="casino-img" />
+        </div>
       </div>
       <div className="content-wrapper">
         <img src="/png/fnv_logo.png" alt="FNV Blackjack" className="font-robotomono text-zinc-50 font-extrabold stroke-indigo-400 text-9xl top-[100px]" />
