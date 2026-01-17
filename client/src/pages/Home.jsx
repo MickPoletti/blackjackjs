@@ -92,15 +92,7 @@ function Home() {
       </div>
       <div className="content-wrapper">
         <button onClick={toggleSound} className="absolute top-2 right-2 bg-red-800 p-2 rounded shadow-lg">
-          {soundOn ? (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.5-4.5v9l-4.5-4.5H4.5a2.25 2.25 0 000-4.5h2.25z" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25M19.5 12l-2.25-2.25M12 4.5v15m0 0l-2.25-2.25M12 19.5l2.25-2.25M12 4.5l2.25 2.25M12 4.5L9.75 6.75" />
-            </svg>
-          )}
+          <i className="material-icons text-white">{soundOn ? 'volume_up' : 'volume_off'}</i>
         </button>
         <img src="/png/fnv_logo.png" alt="FNV Blackjack" className="h-auto font-robotomono text-zinc-50 font-extrabold stroke-indigo-400 text-6xl top-[20px]" />
         <div className="flex flex-col mt-6 items-center">
