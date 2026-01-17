@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Link, useNavigate } from "react-router-dom";
+import { BrowserRouter as Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function Leaderboard() {
@@ -95,7 +95,7 @@ function Leaderboard() {
             )}
 
             <div className="text-center mt-8">
-              <Link href="/"
+              <Link to="/"
                 className="inline-block bg-fallout-green hover:bg-green-600 text-zinc-900 font-bold py-3 px-8 rounded transition-colors"
               >
                 Play Blackjack

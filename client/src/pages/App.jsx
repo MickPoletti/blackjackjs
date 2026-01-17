@@ -2,9 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import Deck from "../components/Deck";
 import Alert from "../components/Alert";
 import Controls from "../components/Controls";
-import { BrowserRouter as Router, Route, Link, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter as Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Navigate } from 'react-router-dom';
 
 function App() {
   const location = useLocation();
@@ -235,7 +234,7 @@ function App() {
     }
   }, [isPlaying, bet, maxBet, setBet, chips, gameEnded, startGame, handlePlaying, hit, stay, setAlertMessage, setAlert, navigate]);
 
-  // Handle keypresses so it feels more like the fallout game
+  // Handle key presses so it feels more like the fallout game
   useEffect(() => {
     document.addEventListener("keypress", handleKeyDown);
     return function cleanup() {
@@ -331,15 +330,6 @@ function App() {
        )}
       {/* Top row */}
       <div className="h-3/4">
-        {/* <Button variant="contained" onClick={dealDeck}>
-          Deal
-        </Button>
-        <Button variant="contained" onClick={hit}>
-          Hit
-        </Button>
-        <Button variant="contained" onClick={stay}>
-          Stay
-        </Button> */}
       </div>{" "}
       {/* Middle row */}
       <div className="w-screen h-1/3 grid grid-rows-1 grid-cols-3 items-center justify-center">
