@@ -217,8 +217,14 @@ app.post('/api/game/start', (req, res) => {
   try {
     const { sessionId, bet } = req.body;
     const userChipsVal = userChips.get(sessionId);
-    if (!sessionId || !userChips.has(sessionId) || !bet || bet <= 0 || bet > userChipsVal) {
-      return res.status(400).json({ error: 'Invalid session or bet amount' });
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Invalid sessionId' });
+    } 
+    if (!userChips.has(sessionId)) {
+      return res.status(400).json({ error: "Couldn't find sessionId in userChips" });
+    }
+    if (!bet || bet <= 0 || bet > userChipsVal) {
+      return res.status(400).json({ error: 'Invalid bet amount' }, { bet: bet }, { userChips:  userChipsVal });
     }
 
     const gameDeck = createDeck();
@@ -254,11 +260,68 @@ app.post('/api/game/start', (req, res) => {
   }
 });
 
+app.post('/api/game/double', (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    const gameState = gameSessions.get(sessionId);
+    if (!gameState || gameState.gamePhase !== 'playing') {
+      return res.status(400).json({ error: 'Invalid game session' });
+    }
+
+    gameState.isBusted = false;
+    gameState.gamePhase = 'finished';
+    gameState.result = 'lose';
+    const chipsChange = -gameState.bet;
+    userChips.set(sessionId, Math.max(0, userChips.get(sessionId) + chipsChange));
+    return res.json({
+        playerHand: gameState.playerHand,
+        playerScore: gameState.playerScore,
+        isBusted: gameState.isBusted,
+        gamePhase: gameState.gamePhase,
+        result: gameState.result,
+        chips: userChips.get(sessionId) || 0,
+        chipsChange
+    });
+    gameSessions.set(sessionId, gameState);
+  } catch (error) {
+    console.error('Error doubling down: ', error);
+    res.status(500).json({ error: 'Failed to double down' });
+  }
+});
+
+app.post('/api/game/surrender', (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    const gameState = gameSessions.get(sessionId);
+    if (!gameState || gameState.gamePhase !== 'playing') {
+      return res.status(400).json({ error: 'Invalid game session' });
+    }
+
+    gameState.isBusted = false;
+    gameState.gamePhase = 'finished';
+    gameState.result = 'lose';
+    const chipsChange = -gameState.bet;
+    userChips.set(sessionId, Math.max(0, userChips.get(sessionId) + chipsChange));
+    return res.json({
+        playerHand: gameState.playerHand,
+        playerScore: gameState.playerScore,
+        isBusted: gameState.isBusted,
+        gamePhase: gameState.gamePhase,
+        result: gameState.result,
+        chips: userChips.get(sessionId) || 0,
+        chipsChange
+    });
+    gameSessions.set(sessionId, gameState);
+  } catch (error) {
+    console.error('Error surrendering:', error);
+    res.status(500).json({ error: 'Failed to surrender' });
+  }
+});
+
 app.post('/api/game/hit', (req, res) => {
   try {
     const { sessionId } = req.body;
     const gameState = gameSessions.get(sessionId);
-
     if (!gameState || gameState.gamePhase !== 'playing') {
       return res.status(400).json({ error: 'Invalid game session' });
     }
