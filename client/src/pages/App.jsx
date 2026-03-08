@@ -142,7 +142,7 @@ function App() {
     if (!gameSessionId) return; 
 
     try {
-      const response = await axios.post("/api/game/double" { sessionId });
+      const response = await axios.post("/api/game/double", { sessionId });
       const gameData = response.data;
 
       handleGameOver(gameData.finalScore || 0, gameData.result, gameData.chips, gameData.chipsChange);
