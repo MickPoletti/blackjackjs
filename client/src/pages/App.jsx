@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Deck from "../components/Deck";
 import Alert from "../components/Alert";
 import Controls from "../components/Controls";
@@ -27,19 +27,25 @@ function App() {
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [gameResult, setGameResult] = useState(null);
-  const [gameEnded, setGameEnded] = useState(false);
-
+  const gameEnded = useRef(false);
   const handlePlaying = useCallback(() => {
     setPlaying(!isPlaying);
   }, [isPlaying, setPlaying]);
-
-  /* Begin functions to handle calls to api */
-
+  const handleExit = useCallback(() => {
+    if (gameEnded) {
+      setShowScoreModal(true);
+    } else {
+      navigate('/');
+    }
+    },
+    [],
+  )
+  
   const handleGameOver = useCallback((score, result, serverChips, chipsChange) => {
     setChips(serverChips);
     setFinalScore(score);
     setGameResult(result);
-    setGameEnded(true);
+    gameEnded.current = true;
     setPlaying(false);
 
     let message = '';
@@ -47,17 +53,19 @@ function App() {
       message = `You win ${Math.abs(chipsChange)} caps!`;
     } else if (result === 'lose') {
       message = `You lose ${Math.abs(chipsChange)} caps!`;
+      setBet(1);
     } else if (result === 'push') {
       message = 'Push! No caps change.';
     }
 
     if (serverChips <= 0 && result === 'lose') {
       message = 'Game over! You\'re out of caps.';
+      handleExit()
     }
-
     setAlertMessage(message);
     setAlert(true);
-  }, [setChips, setFinalScore, setGameResult, setGameEnded, setPlaying, setAlertMessage, setAlert]);
+
+  }, [setChips, setFinalScore, setGameResult, setPlaying, setAlertMessage, setAlert]);
 
   // startGame is called when the user presses the 'W' key to begin a new game
   const startGame = useCallback(async () => {
@@ -79,7 +87,7 @@ function App() {
       setAlert(false);
       setGameResult(null);
     } catch (error) {
-      console.error("Error starting game:", error);
+      console.error("Error starting game: ", error);
     }
   }, [sessionId, bet, chips, setAlertMessage, setAlert, setPlayerHand, setDealerHand, setRevealCard, setReset]);
 
@@ -96,7 +104,7 @@ function App() {
          handleGameOver(gameData.finalScore || 0, gameData.result, gameData.chips, gameData.chipsChange);
        }
     } catch (error) {
-      console.error("Error hitting:", error);
+      console.error("Error hitting: ", error);
     }
   }, [sessionId, gameSessionId, setPlayerHand, handleGameOver]);
 
@@ -113,10 +121,35 @@ function App() {
        // Show result and prompt for score submission
        handleGameOver(gameData.finalScore, gameData.result, gameData.chips, gameData.chipsChange);
     } catch (error) {
-      console.error("Error standing:", error);
+      console.error("Error standing: ", error);
     }
   }, [sessionId, gameSessionId, setDealerHand, setRevealCard, handleGameOver]);
 
+  const surrender = useCallback(async () => {
+    if (!gameSessionId) return; 
+
+    try {
+      const response = await axios.post("/api/game/surrender", { sessionId });
+      const gameData = response.data;
+
+      handleGameOver(gameData.finalScore || 0, gameData.result, gameData.chips, gameData.chipsChange);
+    } catch (error) {
+      console.error("Error surrendering: ", error);
+    }
+  }, [sessionId, gameSessionId, handleGameOver]);
+  
+  const doubleDown = useCallback(async () => {
+    if (!gameSessionId) return; 
+
+    try {
+      const response = await axios.post("/api/game/double", { sessionId });
+      const gameData = response.data;
+
+      handleGameOver(gameData.finalScore || 0, gameData.result, gameData.chips, gameData.chipsChange);
+    } catch (error) {
+      console.error("Error doubling down: ", error);
+    }
+  }, [sessionId, gameSessionId, handleGameOver]);
 
   const submitScore = useCallback(async (username) => {
     if (!username.trim()) return;
@@ -133,7 +166,7 @@ function App() {
       setAlert(true);
       navigate('/');
     } catch (error) {
-      console.error("Error submitting score:", error);
+      console.error("Error submitting score: ", error);
       setAlertMessage("Failed to submit score. Try again.");
       setAlert(true);
     }
@@ -149,7 +182,7 @@ function App() {
           break;
         // Double Down
         case "w":
-          console.log("double down");
+          doubleDown();
           break;
         // Split
         case "e":
@@ -161,7 +194,7 @@ function App() {
           break;
         // Surrender
         case "s":
-          console.log("surrender");
+          surrender(); 
           handlePlaying();
           break;
         // Stay
@@ -177,7 +210,6 @@ function App() {
       switch (e.key) {
         // Deal
         case "w":
-          console.log("deal");
           startGame();
           handlePlaying();
           break;
@@ -204,7 +236,10 @@ function App() {
         }
         // Decrease Bet
         case "q":
-          if (bet <= 0) break;
+          if (bet <= 1) {
+            setBet(1);
+            break;
+          }
           if (bet > 1 && bet <= 10) {
             setBet(bet - 1);
           } else if (bet > 10 && bet <= 100) {
@@ -220,7 +255,6 @@ function App() {
           setBet(Math.min(maxBet, chips));
           break;
         // Exit
-        // This goes to landing page (home screen)
         case "r":
           if (gameEnded) {
             setShowScoreModal(true);
@@ -229,7 +263,6 @@ function App() {
           }
           break;
         default:
-        // Do nothing the user hit an unsupported key
       }
     }
   }, [isPlaying, bet, maxBet, setBet, chips, gameEnded, startGame, handlePlaying, hit, stay, setAlertMessage, setAlert, navigate]);
@@ -317,7 +350,6 @@ function App() {
                 <button
                   onClick={() => {
                     setShowScoreModal(false);
-                    setGameEnded(false);
                     navigate('/');
                   }}
                   className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 font-bold py-2 px-4 rounded transition-colors"

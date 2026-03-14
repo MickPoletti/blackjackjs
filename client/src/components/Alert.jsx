@@ -17,7 +17,7 @@ export default function Alert({ message }) {
   return (
     <animated.div
       style={{ ...slideDown, ...fadeOut }}
-      className="flex h-1/3 w-52 border-2 border-lime-400 bg-zinc-900 rounded-md"
+      className="flex h-1/3 w-1/6 border-2 border-lime-400 bg-zinc-900 rounded-md"
     >
       <img
         className=""
